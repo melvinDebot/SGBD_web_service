@@ -62,14 +62,17 @@ const db = new InMemoryDatabase();
 
 // Crée le serveur web
 const server = http.createServer((req, res) => {
-    if (err.name === 'UnauthorizedError') {
-      res.setHeader('Access-Control-Allow-Origin', '*');
-      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-      res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-      res.setHeader('Access-Control-Allow-Credentials', true);
-      res.status(401).send('Unauthorized');
-    }
-    if (req.method === 'GET' && req.url === '/') {
+   // Ajoute les en-têtes CORS
+   res.setHeader('Access-Control-Allow-Origin', '*');
+   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+   res.setHeader('Access-Control-Allow-Credentials', true);
+ 
+   if (req.method === 'OPTIONS') {
+     // Répond avec les en-têtes CORS appropriés pour les requêtes OPTIONS
+     res.writeHead(200);
+     res.end();
+   } else if (req.method === 'GET' && req.url === '/') {
       // Retourne tous les objets dans la base de données en format JSON
       res.setHeader('Content-Type', 'application/json');
       res.write(JSON.stringify(db.getAll()));
