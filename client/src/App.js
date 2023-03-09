@@ -12,7 +12,7 @@ function App() {
   });
 
   useEffect(() => {
-    axios.get('/api/data').then((response) => {
+    axios.get("http://localhost:8080").then((response) => {
       setData(response.data);
     });
   }, []);
@@ -27,13 +27,13 @@ function App() {
 
   const handleFormSubmit = (event) => {
     event.preventDefault();
-    axios.post('/api/data', formData).then((response) => {
+    axios.post("http://localhost:8080", formData).then((response) => {
       setData([...data, response.data]);
       setShowModal(false);
       setFormData({
-        name: '',
-        email: '',
-        phone: ''
+        name: "",
+        email: "",
+        phone: "",
       });
     });
   };
@@ -56,8 +56,8 @@ function App() {
           </tr>
         </thead>
         <tbody>
-          {data.map((item) => (
-            <tr key={item.id}>
+          {data.map((item, key) => (
+            <tr key={key}>
               <td>{item.name}</td>
               <td>{item.email}</td>
               <td>{item.phone}</td>
