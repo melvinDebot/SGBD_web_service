@@ -1,64 +1,48 @@
 const http = require('http');
 
-class InMemoryDatabase {
-    constructor() {
-      this.data = [];
-    }
-  
-    // Ajoute un objet à la base de données
-    add(object) {
-      this.data.push(object);
-    }
-  
-    // Met à jour un objet dans la base de données
-    update(id, object) {
-      const index = this.findIndexById(id);
-      if (index !== -1) {
-        this.data[index] = Object.assign(this.data[index], object);
-      }
-    }
-  
-    // Supprime un objet de la base de données
-    delete(id) {
-      const index = this.findIndexById(id);
-      if (index !== -1) {
-        this.data.splice(index, 1);
-      }
-    }
-  
-    // Récupère tous les objets dans la base de données
-    getAll() {
-      return this.data;
-    }
-  
-    // Récupère un objet de la base de données par son ID
-    getById(id) {
-      const index = this.findIndexById(id);
-      if (index !== -1) {
-        return this.data[index];
-      }
-    }
-  
-    // Recherche tous les objets dans la base de données qui correspondent à un filtre
-    search(filter) {
-      return this.data.filter(object => {
-        for (const key in filter) {
-          if (filter[key] !== object[key]) {
-            return false;
-          }
-        }
-        return true;
-      });
-    }
-  
-    // Trouve l'index d'un objet dans la base de données par son ID
-    findIndexById(id) {
-      return this.data.findIndex(object => object.id === id);
+const PORT = 3000;
+
+const database = [];
+const tables = [];
+const elements = {};
+
+const handlePost = (req, res) => {
+  let body = '';
+  req.on('data', (chunk) => {
+    body += chunk.toString();
+  });
+  req.on('end', () => {
+    const newEntry = JSON.parse(body);
+    database.push(Object.keys(newEntry)[0]);
+    res.statusCode = 201;
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify(newEntry));
+  });
+};
+
+const handlePostTable = (req, res) => {
+  let body = '';
+  req.on('data', (chunk) => {
+    body += chunk.toString();
+  });
+  req.on('end', () => {
+    const newEntry = JSON.parse(body);
+    tables.push(Object.keys(newEntry)[0]);
+    res.statusCode = 201;
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify(newEntry));
+  });
+};
+
+function findStringInArray(str, arr) {
+  for (let i = 0; i < arr.length; i++) {
+    if (arr[i] === str) {
+      return arr[i];
     }
   }
+  return null;
+}
 
-// Crée une instance de la base de données
-const db = new InMemoryDatabase();
 
 // Crée le serveur web
 const server = http.createServer((req, res) => {
@@ -72,48 +56,45 @@ const server = http.createServer((req, res) => {
      // Répond avec les en-têtes CORS appropriés pour les requêtes OPTIONS
      res.writeHead(200);
      res.end();
+     //création de la bdd
+   } else if (req.method === 'POST' && req.url === '/') {
+     handlePost(req, res);
+ 
+   //affichage la list des BDD
    } else if (req.method === 'GET' && req.url === '/') {
-      // Retourne tous les objets dans la base de données en format JSON
-      res.setHeader('Content-Type', 'application/json');
-      res.write(JSON.stringify(db.getAll()));
-      res.end();
-    } else if (req.method === 'GET' && req.url.startsWith('/object/')) {
-      // Récupère un objet par son ID en format JSON
-      const id = parseInt(req.url.split('/')[2]);
-      const object = db.getById(id);
-      if (object) {
-        res.setHeader('Content-Type', 'application/json');
-        res.write(JSON.stringify(object));
-      } else {
-        res.statusCode = 404;
-      }
-      res.end();
-    } else if (req.method === 'POST' && req.url === '/') {
-      // Ajoute un nouvel objet à la base de données
-      let data = '';
-      req.on('data', chunk => {
-        data += chunk;
-      });
-      req.on('end', () => {
-        try {
-          const object = JSON.parse(data);
-          const id = db.add(object);
-          res.setHeader('Content-Type', 'application/json');
-          res.setHeader('Location', `/object/${id}`);
-          res.statusCode = 201;
-          res.write(JSON.stringify({ id }));
-        } catch (err) {
-          res.statusCode = 400;
-        }
-        res.end();
-      });
-    } else {
-      res.statusCode = 404;
-      res.end();
-    }
-  });
-
-// Lance le serveur web sur le port 8080
-server.listen(8080, () => {
-  console.log('Serveur web lancé sur le port 8080');
-});
+     res.statusCode = 200;
+     res.setHeader('Content-Type', 'application/json');
+     res.end(JSON.stringify(database));
+ 
+   }  else if(req.method === 'DELETE' && findStringInArray(req.url.replace("/", ""), database)){
+     const index = database.indexOf(findStringInArray(req.url.replace("/", ""), database));
+       if (index !== -1){
+       database.splice(index, 1);
+       res.writeHead(200, { 'Content-Type': 'text/plain' });
+       res.end(`BDD suprimmé`);
+       } else {
+         res.writeHead(404, { 'Content-Type': 'text/plain' });
+         res.end(`La chaîne de caractères n'a pas été trouvée dans le tableau.`);
+       }
+ 
+ 
+   //affichage la liste des tables
+   } else if(req.method === 'GET' && findStringInArray(req.url.replace("/", ""), database)){
+     res.statusCode = 200;
+     res.setHeader('Content-Type', 'application/json' );
+     res.end(JSON.stringify(tables));
+ 
+   // création de la table
+   } else if(req.method === 'POST' && findStringInArray(req.url.replace("/", ""), database)){
+     handlePostTable(req, res);
+     
+   // url API pas bon
+   } else {
+     res.statusCode = 404;
+     res.end();
+   }
+ });
+ 
+ server.listen(PORT, () => {
+   console.log(`Server listening on port ${PORT}`);
+ });
