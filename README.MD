@@ -141,7 +141,6 @@ The REST API to the example app is described below.
 
 `PUT http://localhost:8080/nom_databse`
 
-    curl -i -H 'Accept: application/json' -X PUT -d 'name=Foo&status=changed2' http://localhost:7000/thing/1
 
 ### Response
 
@@ -177,7 +176,6 @@ The REST API to the example app is described below.
 
 `DELETE http://localhost:8080/nom_database/nom_table`
 
-    curl -i -H 'Accept: application/json' -X DELETE http://localhost:7000/thing/1/
 
 ### Response
 
