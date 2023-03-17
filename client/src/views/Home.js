@@ -6,42 +6,6 @@ import axios from 'axios';
 function Home() {
   const [nameDatabase, setNameDatabase] = useState('');
   const [database, setDatabase] = useState([]);
-    const [data, setData] = useState([
-      {
-        "Ynov": 
-          {
-            "user": [
-              {
-                "name": "Jean",
-                "age": 25
-              },
-              {
-                "name": "Pierre",
-                "age": 26
-              }
-  
-            ]
-          }
-        
-      },
-      {
-        "Ynov1": [
-          {
-            "user": [
-              {
-                "name": "Jean",
-                "age": 25
-              },
-              {
-                "name": "Pierre",
-                "age": 26
-              }
-  
-            ]
-          }
-        ]
-      }
-    ]);
     useEffect(() => {
       // Exemple de requête GET à une API
       axios.get("http://localhost:8080")
@@ -54,38 +18,52 @@ function Home() {
         });
     }, []);
 
+    // CREATE NEW DATABASE
     const handlePost = (event) => {
       event.preventDefault();
       const newObject = {
-        nameDatabase: {}
+        [nameDatabase]: []
       };
       // Exemple de requête POST à une API
       axios.post("http://localhost:8080", newObject)
         .then(response => {
-          console.log(response.data);
+          // ADD POPUP
+          window.location.reload(false);
         })
         .catch(error => {
           console.log(error);
         });
     }
 
+    const handleDelete = (database) => {
+      axios.delete(`http://localhost:8080/${database}`)
+    .then(() => {
+      console.log('Delete Database');
+      window.location.reload(false);
+    });
+    }
+
     return (
       <div>
+        <h1>DATABASE</h1>
         <table>
       <thead>
         <tr>
           <th>Nom</th>
           <th>Voir</th>
+          <th>Delete</th>
         </tr>
       </thead>
       <tbody>
         
-        {data.map((item, key) => (
+        {database.map((item, key) => (
           <tr key={key}>
-            <td>{Object.keys(data[key])}</td>
+            <td>{Object.keys(item)[0]}</td>
             <td>
-            <Link to={`${Object.keys(data[key])}`}><button>Voir</button></Link>
-                
+            <Link to={Object.keys(item)[0]}>Voir</Link>   
+            </td>
+            <td>
+              <button onClick={()=> handleDelete(Object.keys(item)[0])} className='delete'>Delete</button>
             </td>
             
           </tr>
@@ -93,8 +71,8 @@ function Home() {
       </tbody>
     </table>
     <form>
-      <input type="text" placeholder="Create database" onChange={(e)=> setNameDatabase(e.target.value)} value={nameDatabase}/>
-      <button onClick={handlePost}>Create</button>
+      <input type="text" placeholder="Create name database" onChange={(e)=> setNameDatabase(e.target.value)} value={nameDatabase}/>
+      <button onClick={handlePost} className="create">Create</button>
     </form>
       </div>
     );
