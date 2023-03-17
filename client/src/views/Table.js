@@ -39,17 +39,17 @@ function Table() {
 
     // TODO: UPDATE NEW USER 
     // TODO: DELETE NEW USER 
-    const handleDelete = (database) => {
-      axios.delete(`http://localhost:8080/${database}`)
+    const handleDelete = (table) => {
+      axios.delete(`http://localhost:8080/${nameDatabase}/${table}`)
     .then(() => {
-      console.log('Delete Database');
+      console.log('Delete Table');
       window.location.reload(false);
     });
     }
 
     return (
       <div>
-        <h1>Table</h1>
+        <h1>Database : {path_database}</h1>
       <table>
     <thead>
       <tr>

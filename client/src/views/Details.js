@@ -9,11 +9,10 @@ function splitUrl(url) {
   }
 
 function Details() {
-    const pathTable = window.location.pathname;
+    const [pathTable] = useState(window.location.pathname)
     const [data, setData] = useState([]);
     const [nameData, setNameData] = useState('');
     const segments = splitUrl(pathTable);
-    console.log(segments[0])
 
     useEffect(() => {
         
@@ -29,19 +28,19 @@ function Details() {
     }, []);
 
     // CREATE NEW USER 
-    const handlePost = (event) => {
-      event.preventDefault();
-      // Exemple de requête POST à une API
-      axios.post(`http://localhost:8080${segments[0]}/${segments[1]}`, {
-        name: "toto"
-      })
-        .then(response => {
-          console.log(response.data);
-        })
-        .catch(error => {
-          console.log(error);
-        });
-    }
+    // const handlePost = (event) => {
+    //   event.preventDefault();
+    //   // Exemple de requête POST à une API
+    //   axios.post(`http://localhost:8080${segments[0]}/${segments[1]}`, {
+    //     name: "toto"
+    //   })
+    //     .then(response => {
+    //       console.log(response.data);
+    //     })
+    //     .catch(error => {
+    //       console.log(error);
+    //     });
+    // }
 
     // TODO: UPDATE NEW USER 
 
@@ -49,7 +48,7 @@ function Details() {
 
     return (
       <div>
-        <h1>Tableuuhhh</h1>
+        <h1>Table : {segments[1]}</h1>
       <table>
     <thead>
       <tr>

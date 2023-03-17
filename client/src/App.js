@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom"
 import Home from "./views/Home"
 import Table from "./views/Table"
 import Details from "./views/Details"
+import PageNotFound from "./views/PageNotFound"
 import './App.css'
 
 function App() {
@@ -11,6 +12,7 @@ function App() {
         <Route path="/" element={ <Home/> } />
         <Route path=":database" element={ <Table/> } />
         <Route path=":database/:table" element={ <Details/> } />
+        <Route path="*" element={ <PageNotFound/> } />
       </Routes>
     </div>
   )
