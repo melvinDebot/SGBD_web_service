@@ -41,8 +41,9 @@ function Table() {
   };
 
   // TODO: UPDATE NEW USER
-  const handleUpdate = (name, index) => { 
-    const data = { id: index, name: name, data: {} };
+  const handleUpdate = (item) => { 
+    const data = item;
+    data.name = updateNameDatabase;
     console.log(data);
     axios.put(`http://localhost:8080/${path_database}`, data).then(() => {
       console.log("Update Table");
@@ -83,7 +84,7 @@ function Table() {
                 />
                 <button
                   className="update"
-                  onClick={() => handleUpdate(updatenameTable, item.id)}
+                  onClick={() => handleUpdate(item)}
                 >
                   Update table
                 </button>

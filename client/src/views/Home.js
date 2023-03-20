@@ -4,6 +4,7 @@ import axios from "axios";
 
 function Home() {
   const [nameDatabase, setNameDatabase] = useState("");
+  const [updateNameDatabase, setUpdateNameDatabase] = useState("");
   const [database, setDatabase] = useState([]);
   useEffect(() => {
     // Exemple de requête GET à une API
@@ -38,6 +39,17 @@ function Home() {
       });
   };
 
+  // TODO: UPDATE DATABASE
+  const handleUpdate = (item) => {
+    const data = item;
+    data.name = updateNameDatabase;
+    console.log(data);
+    axios.put(`http://localhost:8080`, data).then(() => {
+      console.log("Update Table");
+      window.location.reload(false);
+    });
+  };
+
   const handleDelete = (database) => {
     console.log(database);
     axios.delete(`http://localhost:8080/${database}`).then(() => {
@@ -54,6 +66,7 @@ function Home() {
           <tr>
             <th>Nom</th>
             <th>Voir</th>
+            <th>Update</th>
             <th>Delete</th>
           </tr>
         </thead>
@@ -63,6 +76,19 @@ function Home() {
               <td>{item.name}</td>
               <td>
                 <Link to={item.name}>Voir</Link>
+              </td>
+              <td>
+                <input
+                  type="text"
+                  placeholder="Update name database"
+                  onChange={(e) => setUpdateNameDatabase(e.target.value)}
+                />
+                <button
+                  className="update"
+                  onClick={() => handleUpdate(item)}
+                >
+                  Update
+                </button>
               </td>
               <td>
                 <button
