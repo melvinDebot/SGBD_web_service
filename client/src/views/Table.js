@@ -6,6 +6,7 @@ function Table() {
   const nameDatabase = window.location.pathname;
   const [users, setUsers] = useState([]);
   const [nameTable, setNameTable] = useState("");
+  const [updatenameTable, setUpdatenameTable] = useState("");
   const path_database = nameDatabase.replace("/", "");
 
   useEffect(() => {
@@ -13,8 +14,8 @@ function Table() {
     axios
       .get(`http://localhost:8080${nameDatabase}`)
       .then((response) => {
-        console.log(response.data[path_database], path_database);
-        setUsers(response.data[path_database]);
+        console.log(response.data, path_database);
+        setUsers(response.data);
       })
       .catch((error) => {
         console.log(error);
@@ -27,10 +28,11 @@ function Table() {
     // Exemple de requête POST à une API
     axios
       .post(`http://localhost:8080${nameDatabase}`, {
-        [nameTable]: [{ name: "melvin" }],
+        id: users.length + 1,
+        name: nameTable,
+        data: {},
       })
       .then((response) => {
-        console.log(response.data);
         window.location.reload(false);
       })
       .catch((error) => {
@@ -39,9 +41,18 @@ function Table() {
   };
 
   // TODO: UPDATE NEW USER
+  const handleUpdate = (name, index) => { 
+    const data = { id: index, name: name, data: {} };
+    console.log(data);
+    axios.put(`http://localhost:8080/${path_database}`, data).then(() => {
+      console.log("Update Table");
+      window.location.reload(false);
+    });
+  }
   // TODO: DELETE NEW USER
   const handleDelete = (table) => {
-    axios.delete(`http://localhost:8080/${nameDatabase}/${table}`).then(() => {
+    
+    axios.delete(`http://localhost:8080/${path_database}/${table}`).then(() => {
       console.log("Delete Table");
       window.location.reload(false);
     });
@@ -49,7 +60,7 @@ function Table() {
 
   return (
     <div>
-      <h1>Database : {path_database}</h1>
+      <h2>Database : {path_database}</h2>
       <table>
         <thead>
           <tr>
@@ -62,16 +73,25 @@ function Table() {
         <tbody>
           {users.map((item, key) => (
             <tr key={key}>
-              <td>{Object.keys(item)[0]}</td>
-              <Link to={`${Object.keys(item)[0]}`}>Voir</Link>
+              <td>{item.name}</td>
+              <Link to={item.name}>Voir</Link>
               <td>
-                <input type="text" placeholder="Change name" />
-                <button className="update">Update table</button>
+                <input
+                  type="text"
+                  placeholder="Change name"
+                  onChange={(e)=>setUpdatenameTable(e.target.value)}
+                />
+                <button
+                  className="update"
+                  onClick={() => handleUpdate(updatenameTable, item.id)}
+                >
+                  Update table
+                </button>
               </td>
               <td>
                 <button
                   className="delete"
-                  onClick={() => handleDelete(Object.keys(item)[0])}
+                  onClick={() => handleDelete(item.name)}
                 >
                   Delete table
                 </button>

@@ -22,7 +22,9 @@ function Home() {
   const handlePost = (event) => {
     event.preventDefault();
     const newObject = {
-      [nameDatabase]: [],
+      id: database.length + 1,
+      name: nameDatabase,
+      table: [],
     };
     // Exemple de requête POST à une API
     axios
@@ -37,6 +39,7 @@ function Home() {
   };
 
   const handleDelete = (database) => {
+    console.log(database);
     axios.delete(`http://localhost:8080/${database}`).then(() => {
       console.log("Delete Database");
       window.location.reload(false);
@@ -45,7 +48,7 @@ function Home() {
 
   return (
     <div>
-      <h1>DATABASE</h1>
+      <h2>DATABASE</h2>
       <table>
         <thead>
           <tr>
@@ -57,13 +60,13 @@ function Home() {
         <tbody>
           {database.map((item, key) => (
             <tr key={key}>
-              <td>{Object.keys(item)[0]}</td>
+              <td>{item.name}</td>
               <td>
-                <Link to={Object.keys(item)[0]}>Voir</Link>
+                <Link to={item.name}>Voir</Link>
               </td>
               <td>
                 <button
-                  onClick={() => handleDelete(Object.keys(item)[0])}
+                  onClick={() => handleDelete(item.name)}
                   className="delete"
                 >
                   Delete

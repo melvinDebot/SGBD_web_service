@@ -46,7 +46,7 @@ function Details() {
 
   return (
     <div>
-      <h1>Table : {segments[1]}</h1>
+      <h2>Table : {segments[1]}</h2>
       <table>
         <thead>
           <tr>
@@ -56,7 +56,7 @@ function Details() {
           </tr>
         </thead>
         <tbody>
-          {data.map((item, key) => (
+          {/* {data.map((item, key) => (
             <tr key={key}>
               <td>{item.name}</td>
               <td>
@@ -67,7 +67,7 @@ function Details() {
                 <button className="delete">Delete table</button>
               </td>
             </tr>
-          ))}
+          ))} */}
         </tbody>
       </table>
       <form>
