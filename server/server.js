@@ -52,7 +52,8 @@ const handlePutTable = (req, res) => {
       if (database[i].name === path) {
         for (let j = 0; j < database[i].table.length; j++) {
           if (database[i].table[j].id === updatedEntry.id) {
-            database[i].table[j] = updatedEntry;
+            database[i].table[j].name = updatedEntry.name;
+            
             found = true;
             break;
           }
@@ -61,6 +62,7 @@ const handlePutTable = (req, res) => {
       }
     }
     if (found) {
+      console.log("UPDATED", updatedEntry)
       res.statusCode = 200;
       res.setHeader("Content-Type", "application/json");
       res.end(JSON.stringify(updatedEntry));
