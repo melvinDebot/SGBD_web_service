@@ -62,7 +62,7 @@ The REST API to the example app is described below.
 
 ### Request
 
-`GET http://localhost:8080/Foo`
+`GET http://localhost:8080/nom_database`
 
 
 ### Response
@@ -74,13 +74,13 @@ The REST API to the example app is described below.
     Content-Type: application/json
     Content-Length: 36
 
-    {"id":1,"name":"users","data":{}}
+    {"id":1,"name":"users","data":[]}
 
 ## Get a table database specific👁‍🗨
 
 ### Request
 
-`GET http://localhost:8080/Foo/users`
+`GET http://localhost:8080/nom_database/nom_table`
 
 
 ### Response
@@ -93,14 +93,80 @@ The REST API to the example app is described below.
     Content-Length: 35
 
     {}
+    
+## Create data👁‍🗨
+
+### Request
+
+`POST http://localhost:8080/nom_database/nom_table`
+{"name": "melvin", "age": 10, "id": 0}
+
+### Response
+
+    HTTP/1.1 200 OK
+    Date: Thu, 24 Feb 2011 12:36:30 GMT
+    Status: 200 OK
+    Connection: close
+    Content-Type: application/json
+    Content-Length: 35
+
+    {"name": "melvin", "age": 10, "id": 0}
+    
+### Filter by name data
+
+`GET http://localhost:8080/search?name=:data_name`
+
+
+### Response
+
+    HTTP/1.1 200 OK
+    Date: Thu, 24 Feb 2011 12:36:30 GMT
+    Status: 200 OK
+    Connection: close
+    Content-Type: application/json
+    Content-Length: 35
+
+    { "name": "melvin", "age": 10, "id": 0}
+    
+ ### Modification data
+
+`PUT http://localhost:8080/nom_database/nom_table/data_id`
+ {"name": "melvin", "age": 10, "id": 0}
+
+### Response
+
+    HTTP/1.1 200 OK
+    Date: Thu, 24 Feb 2011 12:36:30 GMT
+    Status: 200 OK
+    Connection: close
+    Content-Type: application/json
+    Content-Length: 35
+
+    { "name": "melvin", "age": 10, "id": 0}
+    
+ ### Delete data
+
+`DELETE http://localhost:8080/nom_database/nom_table/data_id`
+
+
+### Response
+
+    HTTP/1.1 200 OK
+    Date: Thu, 24 Feb 2011 12:36:30 GMT
+    Status: 200 OK
+    Connection: close
+    Content-Type: application/json
+    Content-Length: 35
+
+    
 
 ## Create new table➕
 
 ### Request
 
-`POST http://localhost:8080/Foo`
+`POST http://localhost:8080/nom_database`
 
-    {"id":1,"name":"users","data":{}}
+    {"id":1,"name":"users","data":[]}
 
 ### Response
 
@@ -112,7 +178,7 @@ The REST API to the example app is described below.
     Location: /thing/2
     Content-Length: 35
 
-    {"id":1,"name":"users","data":{}}
+    {"id":1,"name":"users","data":[]}
 
 
 ## Update database🔁
@@ -151,7 +217,7 @@ The REST API to the example app is described below.
     Content-Type: application/json
     Content-Length: 41
 
-    {"id":1,"name":"product2","data{}}
+    {"id":1,"name":"product2","data[]}
 
 
 ## Delete a Thing🗑
