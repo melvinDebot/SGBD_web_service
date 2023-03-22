@@ -1,9 +1,11 @@
 const http = require("http");
+let url = require("url");
 
 const PORT = 8080;
 
 const database = [];
 
+// Création d'une database
 const handlePost = (req, res) => {
   let body = "";
   req.on("data", (chunk) => {
@@ -17,7 +19,7 @@ const handlePost = (req, res) => {
     res.end(JSON.stringify(newEntry));
   });
 };
-
+// Création d'une table
 const handlePostTable = (req, res) => {
   let body = "";
   req.on("data", (chunk) => {
@@ -25,20 +27,27 @@ const handlePostTable = (req, res) => {
   });
   req.on("end", () => {
     let path = req.url.replace("/", "");
+    //const result = findObjectByName(database, query.name);
     const newEntry = JSON.parse(body);
     for (let i = 0; i < database.length; i++) {
       if (database[i].name === path) {
         database[i].table.push(newEntry);
+        res.statusCode = 201;
+        res.setHeader("Content-Type", "application/json");
+        res.end(JSON.stringify(newEntry));
+        break;
       } else {
-        console.log("PATH NOT FOUND", database[i][path]);
+        console.log("PATH NOT FOUND", database[i].name, path);
+        res.statusCode = 400;
+        res.end("Bad request");
+
+        
       }
     }
-    res.statusCode = 201;
-    res.setHeader("Content-Type", "application/json");
-    res.end(JSON.stringify(newEntry));
+    
   });
 };
-
+// Modification d'une table
 const handlePutTable = (req, res) => {
   let body = "";
   req.on("data", (chunk) => {
@@ -62,7 +71,6 @@ const handlePutTable = (req, res) => {
       }
     }
     if (found) {
-      console.log("UPDATED", updatedEntry)
       res.statusCode = 200;
       res.setHeader("Content-Type", "application/json");
       res.end(JSON.stringify(updatedEntry));
@@ -73,19 +81,18 @@ const handlePutTable = (req, res) => {
     }
   });
 };
-
+// Modification d'une database
 const handlePutDatabase = (req, res) => {
   let body = "";
   req.on("data", (chunk) => {
     body += chunk.toString();
   });
   req.on("end", () => {
-    let path = req.url.replace("/", "");
     const updatedEntry = JSON.parse(body);
     let found = true;
     for (let i = 0; i < database.length; i++) {
       if (database[i].id === updatedEntry.id) {
-        database[i] = updatedEntry;
+        database[i].name = updatedEntry.name;
         found = true;
         break;
       }
@@ -101,7 +108,7 @@ const handlePutDatabase = (req, res) => {
     }
   });
 };
-
+// Recherche d'un élément dans un tableau
 function findStringInArray(arr, str) {
   for (let i = 0; i < arr.length; i++) {
     if (arr[i].name === str) {
@@ -110,7 +117,7 @@ function findStringInArray(arr, str) {
   }
   return null;
 }
-
+// Suppression d'un élément dans un tableau
 function deleteObject(tableau, chaineRecherche) {
   for (let i = 0; i < tableau.length; i++) {
     if (tableau[i].name === chaineRecherche) {
@@ -120,14 +127,30 @@ function deleteObject(tableau, chaineRecherche) {
   }
   return false;
 }
-
+// Split d'une url
 function splitUrl(url) {
   const segments = url.split("/");
   return segments.filter((segment) => segment !== "");
 }
 
+// Recherche d'un élément dans un tableau par le nom
+function findObjectByName(arr, name) {
+  for (let obj of arr) {
+    for (let table of obj.table) {
+      for (let data of table.data) {
+        if (data.name === name) {
+          return data;
+        }
+      }
+    }
+  }
+  return null;
+}
+
 // Crée le serveur web
 const server = http.createServer((req, res) => {
+  const parsedUrl = url.parse(req.url, true); // true sets the query property of parsedUrl to an object
+  const query = parsedUrl.query;
   // Ajoute les en-têtes CORS
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
@@ -163,75 +186,198 @@ const server = http.createServer((req, res) => {
 
     //affichage la liste des tables
   } else if (req.method === "GET" && path_database) {
-    for (let i = 0; i < database.length; i++) {
-      if (database[i].name === path_database) {
-        res.statusCode = 200;
-        res.setHeader("Content-Type", "application/json");
-        res.end(JSON.stringify(database[i].table));
-        break;
-      } else {
-        res.statusCode = 404;
-        res.end("Not found");
-      }
+    let result = database.find((item) => item.name === path_database);
+    if (result) { 
+      res.statusCode = 200;
+      res.setHeader("Content-Type", "application/json");
+      res.end(JSON.stringify(result.table));
+    } else {
+      res.statusCode = 404;
+      res.end(`Not found ${path_database}`);
     }
+    
+
 
     // création de la table
   } else if (req.method === "PUT" && path_database) {
     handlePutTable(req, res);
   } else if (req.method === "POST" && path_database) {
     handlePostTable(req, res); // fonction qui crée la table
-  } else if (req.method === "GET" && path_database) {
-    // fonction qui vérifie l'objet
-    database.map((item) => {
-      if (Object.keys(item)[0] === req.url.replace("/", "")) {
-        res.statusCode = 200;
-        res.setHeader("Content-Type", "application/json");
-        res.end(JSON.stringify(item));
-      }
-    });
-    // création de la table
   }
-  // GET TABLE /ynov/users
+  // else if (req.method === "GET" && path_database) {
+  //   // fonction qui vérifie l'objet
+  //   database.map((item) => {
+  //     if (Object.keys(item)[0] === req.url.replace("/", "")) {
+  //       res.statusCode = 200;
+  //       res.setHeader("Content-Type", "application/json");
+  //       res.end(JSON.stringify(item));
+  //     }
+  //   });
+  // }
+  // GET TABLE /:database/:table
   else if (req.method === "GET" && req.url) {
     const segments = splitUrl(req.url);
-    for (let i = 0; i < database.length; i++) {
-      for (let j = 0; j < database[i].table.length; j++) {
-        if (database[i].table[j].name === segments[1]) {
-          res.statusCode = 200;
-          res.setHeader("Content-Type", "application/json");
-          res.end(JSON.stringify(database[i].table[j].data));
-        } else {
-          res.statusCode = 400;
-          res.setHeader("Content-Type", "text/plain");
-          res.end(`Bad request `);
+    if (req.url.startsWith("/search")) {
+      const result = findObjectByName(database, query.name);
+      if (result !== null) { 
+        res.statusCode = 200;
+        res.setHeader("Content-Type", "application/json");
+        res.end(JSON.stringify(result));
+      } else {
+        res.statusCode = 404;
+        res.setHeader("Content-Type", "text/plain");
+        res.end(`Not found data ${req.url}`);
+      }
+    } else {
+      for (let i = 0; i < database.length; i++) {
+        for (let j = 0; j < database[i].table.length; j++) {
+          if (database[i].table[j].name === segments[1]) {
+            res.statusCode = 200;
+            res.setHeader("Content-Type", "application/json");
+            res.end(JSON.stringify(database[i].table[j].data));
+          } else {
+            res.statusCode = 400;
+            res.setHeader("Content-Type", "text/plain");
+            res.end(`Bad request  for table ${req.url}`);
+          }
+          break;
         }
-        break;
       }
     }
+      
   }
-  // DELETE TABLE /ynov/users
-  else if (req.method === "DELETE" && req.url) {
+  // POST DATA /:database/:table
+  else if (req.method === "POST" && req.url) { 
     const segments = splitUrl(req.url);
-    for (let i = 0; i < database.length; i++) {
-      for (let j = 0; j < database[i].table.length; j++) {
-        if (database[i].table[j].name === segments[1]) {
-          deleteObject(database[i].table, segments[1]);
-          res.statusCode = 200;
-          res.setHeader("Content-Type", "application/json");
-          res.end(JSON.stringify(database[i].table));
-        } else {
-          res.statusCode = 404;
-          res.setHeader("Content-Type", "text/plain");
-          res.end(`Route not found`);
+    let body = "";
+    req.on("data", (chunk) => {
+      body += chunk.toString();
+    });
+    req.on("end", () => {
+      const data = JSON.parse(body);
+      for (let i = 0; i < database.length; i++) {
+        for (let j = 0; j < database[i].table.length; j++) {
+          if (database[i].table[j].name === segments[1]) {
+            database[i].table[j].data.push(data);
+            res.statusCode = 200;
+            res.setHeader("Content-Type", "application/json");
+            res.end(JSON.stringify(database[i].table[j].data));
+            break;
+          } else {
+            res.statusCode = 404;
+            res.setHeader("Content-Type", "text/plain");
+            res.end(
+              `path not found ${database[i].table[j].name} ${segments[1]}`
+            );
+            break;
+          }
+          
+        }
+      }
+    });
+  }
+    // DELETE TABLE /ynov/users
+  else if (req.method === "DELETE" && "/:database/:table") {
+    const segments = splitUrl(req.url);
+    if (segments.length <= 2) {
+      for (let i = 0; i < database.length; i++) {
+        for (let j = 0; j < database[i].table.length; j++) {
+          if (database[i].table[j].name === segments[1]) {
+            deleteObject(database[i].table, segments[1]);
+            console.log(segments.length);
+            res.statusCode = 200;
+            res.setHeader("Content-Type", "application/json");
+            res.end(JSON.stringify(database[i].table));
+          } else {
+            res.statusCode = 404;
+            res.setHeader("Content-Type", "text/plain");
+            res.end(`path not found ${req.url}`);
+          }
+          break;
         }
         break;
       }
-      break;
+    } else if(segments.length >= 3) {
+      // DELETE DATA /ynov/users/:name
+      for (let i = 0; i < database.length; i++) {
+        for (let j = 0; j < database[i].table.length; j++) {
+          if (database[i].table[j].name === segments[1]) {
+            for (let k = 0; k < database[i].table[j].data.length; k++) {
+              if (database[i].table[j].data[k].name === segments[2]) {
+                deleteObject(database[i].table[j].data, segments[2]);
+                res.statusCode = 200;
+                res.setHeader("Content-Type", "application/json");
+                res.end(JSON.stringify(database[i].table[j].data));
+
+                break;
+              } else {
+                res.statusCode = 400;
+                res.setHeader("Content-Type", "text/plain");
+                res.end(
+                  `the server cannot or will not process the request due to something that is perceived to be a client error `
+                );
+                break;
+              }
+            }
+          } else {
+            res.statusCode = 404;
+            res.setHeader("Content-Type", "text/plain");
+            res.end(`path not found ${req.url}`);
+          }
+          break;
+        }
+      }
     }
+    
   }
+
+    
+    
+  // PUT DATA /:database/:table/:id
+  else if (req.method === "PUT" && req.url) { 
+    const segments = splitUrl(req.url);
+    let body = "";
+    req.on("data", (chunk) => {
+      body += chunk.toString();
+    });
+    req.on("end", () => {
+      const data = JSON.parse(body);
+      for (let i = 0; i < database.length; i++) {
+        for (let j = 0; j < database[i].table.length; j++) {
+          if (database[i].table[j].name === segments[1]) {
+            for (let k = 0; k < database[i].table[j].data.length; k++) { 
+              if (database[i].table[j].data[k].id.toString() === segments[2]) {
+                database[i].table[j].data[k] = data;
+                res.statusCode = 200;
+                res.setHeader("Content-Type", "application/json");
+                res.end(JSON.stringify(database[i].table[j].data[k]));
+                break;
+              } else {
+                res.statusCode = 400;
+                res.setHeader("Content-Type", "text/plain");
+                res.end(
+                  `the server cannot or will not process the request due to something that is perceived to be a client error `
+                );
+                break;
+              }
+              
+            }
+            
+          } else {
+            res.statusCode = 404;
+            res.setHeader("Content-Type", "text/plain");
+            res.end(`path not found ${req.url}`);
+          }
+          break;
+        }
+      }
+    });
+  }
+  
+  
+  
   // url API pas bon
   else {
-    console.log(path_database);
     res.statusCode = 404;
     res.end();
   }
