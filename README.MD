@@ -99,7 +99,8 @@ The REST API to the example app is described below.
 ### Request
 
 `POST http://localhost:8080/nom_database/nom_table`
-{"name": "melvin", "age": 10, "id": 0}
+
+    {"name": "melvin", "age": 10, "id": 0}
 
 ### Response
 
@@ -131,7 +132,10 @@ The REST API to the example app is described below.
  ### Modification data
 
 `PUT http://localhost:8080/nom_database/nom_table/data_id`
- {"name": "melvin", "age": 10, "id": 0}
+    
+    {"name": "melvin", "age": 10, "id": 0}
+    
+ > :warning: **Make sure to add the same id of the object**: be careful with the writing so as not to have an error!
 
 ### Response
 
@@ -188,6 +192,8 @@ The REST API to the example app is described below.
 `PUT http://localhost:8080`
 
     {"id":1,"name":"bar","table":[]}
+    
+ > :warning: **Make sure to add the same id of the object**: be careful with the writing so as not to have an error!
 
 ### Response
 
