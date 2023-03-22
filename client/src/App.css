@@ -1,6 +1,10 @@
 .App {
   text-align: center;
-  padding: 0 10rem;
+  padding: 0 3rem;
+}
+form{
+  display: flex;
+  margin-bottom: 10px;
 }
 
 table {
@@ -13,7 +17,8 @@ table {
 table td,
 table th {
   border: 1px solid #ddd;
-  padding: 8px;
+  padding: 5px;
+  
 }
 
 table tr:nth-child(even) {
