@@ -30,7 +30,7 @@ function Table() {
       .post(`http://localhost:8080${nameDatabase}`, {
         id: users.length + 1,
         name: nameTable,
-        data: {},
+        data: [],
       })
       .then((response) => {
         window.location.reload(false);
@@ -43,7 +43,7 @@ function Table() {
   // TODO: UPDATE NEW USER
   const handleUpdate = (item) => { 
     const data = item;
-    data.name = updateNameDatabase;
+    data.name = updatenameTable;
     console.log(data);
     axios.put(`http://localhost:8080/${path_database}`, data).then(() => {
       console.log("Update Table");
@@ -62,45 +62,6 @@ function Table() {
   return (
     <div>
       <h2>Database : {path_database}</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Nom</th>
-            <th>Voir</th>
-            <th>Update</th>
-            <th>Delete</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map((item, key) => (
-            <tr key={key}>
-              <td>{item.name}</td>
-              <Link to={item.name}>Voir</Link>
-              <td>
-                <input
-                  type="text"
-                  placeholder="Change name"
-                  onChange={(e)=>setUpdatenameTable(e.target.value)}
-                />
-                <button
-                  className="update"
-                  onClick={() => handleUpdate(item)}
-                >
-                  Update table
-                </button>
-              </td>
-              <td>
-                <button
-                  className="delete"
-                  onClick={() => handleDelete(item.name)}
-                >
-                  Delete table
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
       <form>
         <input
           type="text"
@@ -112,6 +73,42 @@ function Table() {
           Create
         </button>
       </form>
+      <table>
+        <thead>
+          <tr>
+            <th>Nom</th>
+            <th>Voir</th>
+            <th>Update</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {users.map((item, key) => (
+            <tr key={key}>
+              <td>{item.name}</td>
+              <Link to={item.name}>Voir</Link>
+              <td>
+                <input
+                  type="text"
+                  placeholder="Change name"
+                  onChange={(e) => setUpdatenameTable(e.target.value)}
+                />
+              </td>
+              <td>
+                <button className="update" onClick={() => handleUpdate(item)}>
+                  Update table
+                </button>
+                <button
+                  className="delete"
+                  onClick={() => handleDelete(item.name)}
+                >
+                  Delete table
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

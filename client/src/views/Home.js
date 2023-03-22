@@ -61,6 +61,17 @@ function Home() {
   return (
     <div>
       <h2>DATABASE</h2>
+      <form>
+        <input
+          type="text"
+          placeholder="Create name database"
+          onChange={(e) => setNameDatabase(e.target.value)}
+          value={nameDatabase}
+        />
+        <button onClick={handlePost} className="create">
+          Create
+        </button>
+      </form>
       <table>
         <thead>
           <tr>
@@ -83,10 +94,7 @@ function Home() {
                   placeholder="Update name database"
                   onChange={(e) => setUpdateNameDatabase(e.target.value)}
                 />
-                <button
-                  className="update"
-                  onClick={() => handleUpdate(item)}
-                >
+                <button className="update" onClick={() => handleUpdate(item)}>
                   Update
                 </button>
               </td>
@@ -102,17 +110,6 @@ function Home() {
           ))}
         </tbody>
       </table>
-      <form>
-        <input
-          type="text"
-          placeholder="Create name database"
-          onChange={(e) => setNameDatabase(e.target.value)}
-          value={nameDatabase}
-        />
-        <button onClick={handlePost} className="create">
-          Create
-        </button>
-      </form>
     </div>
   );
 }
