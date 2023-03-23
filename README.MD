@@ -44,7 +44,10 @@ The REST API to the example app is described below.
 
 `POST http://localhost:8080`
 
-    {"id":1,"name":"Foo","table":[]}
+    {
+        "id": "/ynov1",
+        "name": "ynov1"
+    }
 
 ### Response
 
@@ -56,7 +59,10 @@ The REST API to the example app is described below.
     Location: /thing/1
     Content-Length: 36
 
-    {"id":1,"name":"Foo","table":[]}
+     {
+        "id": "/ynov1",
+        "name": "ynov1"
+    }
 
 ## Get a specific database👁‍🗨
 
@@ -74,7 +80,22 @@ The REST API to the example app is described below.
     Content-Type: application/json
     Content-Length: 36
 
-    {"id":1,"name":"users","data":[]}
+     {
+        "id": "/ynov1",
+        "name":"ynov1",
+        "table": [
+            {
+                "id": 1,
+                "name": "users",
+                "détail": "/ynov1/users"
+            },
+            {
+                "id": 2,
+                "name": "products",
+                "détail": "/ynov1/products"
+            }
+        ]
+    }
 
 ## Get a table database specific👁‍🗨
 
@@ -92,7 +113,22 @@ The REST API to the example app is described below.
     Content-Type: application/json
     Content-Length: 35
 
-    {}
+    {
+        "id": 1,
+        "name": "users",
+        "data": [
+            {
+                "name": "vince",
+                "age": 10,
+                "id": 1
+            },
+            {
+                "name": "vincea",
+                "age": 10,
+                "id": 2
+            }
+        ]
+    }
     
 ## Create data👁‍🗨
 
@@ -111,7 +147,7 @@ The REST API to the example app is described below.
     Content-Type: application/json
     Content-Length: 35
 
-    {"name": "melvin", "age": 10, "id": 0}
+    {"name": "melvin", "age": 10, "id": "/nom_database/nom_table/1"}
     
 ### Filter by name data
 
@@ -170,7 +206,7 @@ The REST API to the example app is described below.
 
 `POST http://localhost:8080/nom_database`
 
-    {"id":1,"name":"users","data":[]}
+    {"id":"/users","name":"users"}
 
 ### Response
 
@@ -182,7 +218,7 @@ The REST API to the example app is described below.
     Location: /thing/2
     Content-Length: 35
 
-    {"id":1,"name":"users","data":[]}
+    {"id":"/users","name":"users"}
 
 
 ## Update database🔁
