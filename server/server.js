@@ -1,9 +1,22 @@
 const http = require("http");
-let url = require("url");
+const url = require("url");
 
 const PORT = 8080;
 
 const database = [];
+
+function checkDoublon(e) {
+  for (let i = 0; i < e.length; i++) {
+      for (let j = i + 1; j < e.length; j++) {
+        console.log(e[i], e[j])
+          if (JSON.stringify(e[i]) === JSON.stringify(e[j])) {
+          e.splice(j, 1);
+           j--;
+          }
+      }
+  }
+
+}
 
 // Création d'une database
 const handlePost = (req, res) => {
@@ -13,10 +26,26 @@ const handlePost = (req, res) => {
   });
   req.on("end", () => {
     const newEntry = JSON.parse(body);
-    database.push(newEntry);
-    res.statusCode = 201;
-    res.setHeader("Content-Type", "application/json");
-    res.end(JSON.stringify(newEntry));
+    const expectedBody = {
+      "id": "id",
+      "name": "nom de la BDD",
+      "table": []
+    };
+    if (JSON.stringify(Object.keys(newEntry)) === JSON.stringify(Object.keys(expectedBody))){
+      database.push(newEntry);
+      checkDoublon(database)
+      res.statusCode = 201;
+      res.setHeader("Content-Type", "text/plain");
+      res.end(`Votre base "${newEntry.name}" a été créer`);
+    } else {
+      res.statusCode = 401;
+      res.setHeader("Content-Type", "application/json");
+      const errorMessage = {
+        "message": "Le format du body est invalide.",
+        "format": expectedBody
+      }
+      res.end(JSON.stringify(errorMessage));
+    }
   });
 };
 // Création d'une table
@@ -29,22 +58,28 @@ const handlePostTable = (req, res) => {
     let path = req.url.replace("/", "");
     //const result = findObjectByName(database, query.name);
     const newEntry = JSON.parse(body);
+    const expectedBody = {"id":1,"name":"users","data":[]}
+    console.log(database)
     for (let i = 0; i < database.length; i++) {
       if (database[i].name === path) {
-        database[i].table.push(newEntry);
-        res.statusCode = 201;
-        res.setHeader("Content-Type", "application/json");
-        res.end(JSON.stringify(newEntry));
+        if (JSON.stringify(Object.keys(newEntry)) === JSON.stringify(Object.keys(expectedBody))){
+          database[i].table.push(newEntry);
+          checkDoublon(database[i].table)
+          res.statusCode = 201;
+          res.setHeader("Content-Type", "text/plain");
+          res.end(`Votre base "${newEntry.name}" a été créer`);
+        }else {
+          res.statusCode = 401;
+          res.setHeader("Content-Type", "application/json");
+          const errorMessage = {
+            "message": "Le format du body est invalide.",
+            "format": expectedBody
+          }
+          res.end(JSON.stringify(errorMessage));
+        }
         break;
-      } else {
-        console.log("PATH NOT FOUND", database[i].name, path);
-        res.statusCode = 400;
-        res.end("Bad request");
-
-        
-      }
+      } 
     }
-    
   });
 };
 // Modification d'une table
@@ -204,16 +239,7 @@ const server = http.createServer((req, res) => {
   } else if (req.method === "POST" && path_database) {
     handlePostTable(req, res); // fonction qui crée la table
   }
-  // else if (req.method === "GET" && path_database) {
-  //   // fonction qui vérifie l'objet
-  //   database.map((item) => {
-  //     if (Object.keys(item)[0] === req.url.replace("/", "")) {
-  //       res.statusCode = 200;
-  //       res.setHeader("Content-Type", "application/json");
-  //       res.end(JSON.stringify(item));
-  //     }
-  //   });
-  // }
+
   // GET TABLE /:database/:table
   else if (req.method === "GET" && req.url) {
     const segments = splitUrl(req.url);
