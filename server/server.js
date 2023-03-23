@@ -1,9 +1,18 @@
 const http = require("http");
 const url = require("url");
+const fs = require('fs');
+
 
 const PORT = 8080;
 
-const database = [];
+let database = [];
+
+function saveData( ){
+  fs.writeFile('data.json', JSON.stringify(database), (err) => {
+    if (err) throw err;
+    console.log('Les données ont été sauvegardées dans le fichier data.json');
+  });
+} 
 
 function checkDoublon(e) {
   for (let i = 0; i < e.length; i++) {
@@ -56,7 +65,6 @@ const handlePostTable = (req, res) => {
   });
   req.on("end", () => {
     let path = req.url.replace("/", "");
-    //const result = findObjectByName(database, query.name);
     const newEntry = JSON.parse(body);
     const expectedBody = {"id":1,"name":"users","data":[]}
     console.log(database)
@@ -182,6 +190,11 @@ function findObjectByName(arr, name) {
   return null;
 }
 
+ // Stocker l'ID du timer dans une variable
+ setInterval(saveData, 300000);
+
+
+
 // Crée le serveur web
 const server = http.createServer((req, res) => {
   const parsedUrl = url.parse(req.url, true); // true sets the query property of parsedUrl to an object
@@ -208,9 +221,26 @@ const server = http.createServer((req, res) => {
 
     //affichage la list des BDD
   } else if (req.method === "GET" && req.url === "/") {
-    res.statusCode = 200;
-    res.setHeader("Content-Type", "application/json");
-    res.end(JSON.stringify(database));
+       // Arrêter le timer après 1 minute
+   fs.readFile('data.json', 'utf8', (err, data) => {
+    if (err) throw err;
+  
+    console.log(data.length)
+    // Vérifier si le fichier est vide
+      if(data.trim.length <= 0){
+      res.statusCode = 200;
+      res.setHeader("Content-Type", "application/json");
+      res.end(JSON.stringify(database));
+    } else {
+      res.statusCode = 200;
+      res.setHeader("Content-Type", "application/json");
+      res.end(data);
+    }
+    
+    });
+    // res.statusCode = 200;
+    // res.setHeader("Content-Type", "application/json");
+    // res.end(JSON.stringify(database));
   } else if (
     req.method === "DELETE" && //suppression de la BDD
     path_database
@@ -407,8 +437,21 @@ const server = http.createServer((req, res) => {
     res.statusCode = 404;
     res.end();
   }
+
 });
 
 server.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
+});
+
+// Arrêter le serveur après 5 secondes
+setTimeout(() => {
+  server.close();
+}, 10000);
+
+// Vérifier si le serveur est arrêté
+server.on('close', () => {
+
+  //clearInterval(timerId);
+  console.log('Le serveur est arrêté');
 });
