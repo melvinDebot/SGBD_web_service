@@ -47,6 +47,7 @@ The REST API to the example app is described below.
     {
         "id": "/ynov1",
         "name": "ynov1"
+        "table": []
     }
 
 ### Response
@@ -85,14 +86,14 @@ The REST API to the example app is described below.
         "name":"ynov1",
         "table": [
             {
-                "id": 1,
+                "id": "/user",
                 "name": "users",
-                "détail": "/ynov1/users"
+                
             },
             {
-                "id": 2,
+                "id": "/products",
                 "name": "products",
-                "détail": "/ynov1/products"
+                
             }
         ]
     }
@@ -114,18 +115,18 @@ The REST API to the example app is described below.
     Content-Length: 35
 
     {
-        "id": 1,
+        "id": "/users",
         "name": "users",
         "data": [
             {
                 "name": "vince",
                 "age": 10,
-                "id": 1
+                "id": "/vince"
             },
             {
                 "name": "vincea",
                 "age": 10,
-                "id": 2
+                "id": "/vincea"
             }
         ]
     }
@@ -136,7 +137,7 @@ The REST API to the example app is described below.
 
 `POST http://localhost:8080/nom_database/nom_table`
 
-    {"name": "melvin", "age": 10, "id": 0}
+    {"name": "melvin", "age": 10, "id": "/melvin"}
 
 ### Response
 
@@ -147,7 +148,7 @@ The REST API to the example app is described below.
     Content-Type: application/json
     Content-Length: 35
 
-    {"name": "melvin", "age": 10, "id": "/nom_database/nom_table/1"}
+    {"name": "melvin", "age": 10, "id": "/melvin"}
     
 ### Filter by name data
 
@@ -163,30 +164,13 @@ The REST API to the example app is described below.
     Content-Type: application/json
     Content-Length: 35
 
-    { "name": "melvin", "age": 10, "id": 0}
+    { "name": "melvin", "age": 10, "id": "/melvin"}
     
- ### Modification data
 
-`PUT http://localhost:8080/nom_database/nom_table/data_id`
-    
-    {"name": "melvin", "age": 10, "id": 0}
-    
- > :warning: **Make sure to add the same id of the object**: be careful with the writing so as not to have an error!
-
-### Response
-
-    HTTP/1.1 200 OK
-    Date: Thu, 24 Feb 2011 12:36:30 GMT
-    Status: 200 OK
-    Connection: close
-    Content-Type: application/json
-    Content-Length: 35
-
-    { "name": "melvin", "age": 10, "id": 0}
     
  ### Delete data
 
-`DELETE http://localhost:8080/nom_database/nom_table/data_id`
+`DELETE http://localhost:8080/nom_database/nom_table/data_name`
 
 
 ### Response
@@ -198,7 +182,7 @@ The REST API to the example app is described below.
     Content-Type: application/json
     Content-Length: 35
 
-    
+    []
 
 ## Create new table➕
 
@@ -220,46 +204,6 @@ The REST API to the example app is described below.
 
     {"id":"/users","name":"users"}
 
-
-## Update database🔁
-
-### Request
-
-`PUT http://localhost:8080`
-
-    {"id":1,"name":"bar","table":[]}
-    
- > :warning: **Make sure to add the same id of the object**: be careful with the writing so as not to have an error!
-
-### Response
-
-    HTTP/1.1 200 OK
-    Date: Thu, 24 Feb 2011 12:36:31 GMT
-    Status: 200 OK
-    Connection: close
-    Content-Type: application/json
-    Content-Length: 40
-
-    {"id":1,"name":"bar","table":[]}
-
-
-## Update table🔁
-
-### Request
-
-`PUT http://localhost:8080/nom_databse`
-
-
-### Response
-
-    HTTP/1.1 200 OK
-    Date: Thu, 24 Feb 2011 12:36:31 GMT
-    Status: 200 OK
-    Connection: close
-    Content-Type: application/json
-    Content-Length: 41
-
-    {"id":1,"name":"product2","data[]}
 
 
 ## Delete a Thing🗑
@@ -292,4 +236,24 @@ The REST API to the example app is described below.
     Status: 200 OK
 
     []
+
+# Features added
+Restore data via JSON file if the server crashes
+``` javascript
+function saveData() {
+  fs.writeFile("data.json", JSON.stringify(database), (err) => {
+    if (err) throw err;
+    console.log("Les données ont été sauvegardées dans le fichier data.json");
+  });
+}
+
+fs.readFile("data.json", (err, data) => {
+  if (err) throw err;
+  if (data.length > 0) {
+    database = JSON.parse(data);
+  } else {
+    database = [];
+  }
+});
+```
 
