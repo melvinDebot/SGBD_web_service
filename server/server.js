@@ -1,31 +1,36 @@
 const http = require("http");
 const url = require("url");
-const fs = require('fs');
-const { json } = require("node:stream/consumers");
-const { Console } = require("console");
-
+const fs = require("fs");
 
 const PORT = 8080;
 
 let database = [];
 
-function saveData( ){
-  fs.writeFile('data.json', JSON.stringify(database), (err) => {
+function saveData() {
+  fs.writeFile("data.json", JSON.stringify(database), (err) => {
     if (err) throw err;
-    console.log('Les données ont été sauvegardées dans le fichier data.json');
+    console.log("Les données ont été sauvegardées dans le fichier data.json");
   });
-} 
+}
+
+fs.readFile("data.json", (err, data) => {
+  if (err) throw err;
+  if (data.length > 0) {
+    database = JSON.parse(data);
+  } else {
+    database = [];
+  }
+});
 
 function checkDoublon(e) {
   for (let i = 0; i < e.length; i++) {
-      for (let j = i + 1; j < e.length; j++) {
-          if (JSON.stringify(e[i].id) === JSON.stringify(e[j].id)) {
-          e.splice(j, 1);
-           j--;
-          }
+    for (let j = i + 1; j < e.length; j++) {
+      if (JSON.stringify(e[i].id) === JSON.stringify(e[j].id)) {
+        e.splice(j, 1);
+        j--;
       }
+    }
   }
-
 }
 
 // Création d'une database
@@ -37,13 +42,16 @@ const handlePost = (req, res) => {
   req.on("end", () => {
     const newEntry = JSON.parse(body);
     const expectedBody = {
-      "id": "id",
-      "name": "nom de la BDD",
-      "table": []
+      id: "id",
+      name: "nom de la BDD",
+      table: [],
     };
-    if (JSON.stringify(Object.keys(newEntry)) === JSON.stringify(Object.keys(expectedBody))){
+    if (
+      JSON.stringify(Object.keys(newEntry)) ===
+      JSON.stringify(Object.keys(expectedBody))
+    ) {
       database.push(newEntry);
-      checkDoublon(database)
+      checkDoublon(database);
       res.statusCode = 201;
       res.setHeader("Content-Type", "text/plain");
       res.end(`Votre base "${newEntry.name}" a été créer`);
@@ -51,9 +59,9 @@ const handlePost = (req, res) => {
       res.statusCode = 401;
       res.setHeader("Content-Type", "application/json");
       const errorMessage = {
-        "message": "Le format du body est invalide.",
-        "format": expectedBody
-      }
+        message: "Le format du body est invalide.",
+        format: expectedBody,
+      };
       res.end(JSON.stringify(errorMessage));
     }
   });
@@ -67,26 +75,29 @@ const handlePostTable = (req, res) => {
   req.on("end", () => {
     let path = req.url.replace("/", "");
     const newEntry = JSON.parse(body);
-    const expectedBody = {"id":1,"name":"users","data":[]}
+    const expectedBody = { id: 1, name: "users", data: [] };
     for (let i = 0; i < database.length; i++) {
       if (database[i].name === path) {
-        if (JSON.stringify(Object.keys(newEntry)) === JSON.stringify(Object.keys(expectedBody))){
+        if (
+          JSON.stringify(Object.keys(newEntry)) ===
+          JSON.stringify(Object.keys(expectedBody))
+        ) {
           database[i].table.push(newEntry);
-          checkDoublon(database[i].table)
+          checkDoublon(database[i].table);
           res.statusCode = 201;
           res.setHeader("Content-Type", "text/plain");
           res.end(`Votre base "${newEntry.name}" a été créer`);
-        }else {
+        } else {
           res.statusCode = 401;
           res.setHeader("Content-Type", "application/json");
           const errorMessage = {
-            "message": "Le format du body est invalide.",
-            "format": expectedBody
-          }
+            message: "Le format du body est invalide.",
+            format: expectedBody,
+          };
           res.end(JSON.stringify(errorMessage));
         }
         break;
-      } 
+      }
     }
   });
 };
@@ -100,15 +111,15 @@ const handlePutTable = (req, res) => {
     const updatedEntry = JSON.parse(body);
     let found = false;
     for (let i = 0; i < database.length; i++) {
-        for (let j = 0; j < database[i].table.length; j++) {
-          const index = req.url.indexOf(database.id)
-          if (index !== -1){
-            database[i].table[j].name = updatedEntry.name;
-            database[i].table[j].id = updatedEntry.id
-            found = true;
-          }
-          break;
+      for (let j = 0; j < database[i].table.length; j++) {
+        const index = req.url.indexOf(database.id);
+        if (index !== -1) {
+          database[i].table[j].name = updatedEntry.name;
+          database[i].table[j].id = updatedEntry.id;
+          found = true;
         }
+        break;
+      }
       break;
     }
     if (found) {
@@ -188,10 +199,8 @@ function findObjectByName(arr, name) {
   return null;
 }
 
- // Stocker l'ID du timer dans une variable
- setInterval(saveData, 300000);
-
-
+// Stocker l'ID du timer dans une variable
+setInterval(saveData, 300000);
 
 // Crée le serveur web
 const server = http.createServer((req, res) => {
@@ -204,8 +213,6 @@ const server = http.createServer((req, res) => {
   res.setHeader("Access-Control-Allow-Credentials", true);
 
   let path_database = findStringInArray(database, req.url.replace("/", ""));
-
-  console.log(database)
 
   if (req.method === "OPTIONS") {
     // Répond avec les en-têtes CORS appropriés pour les requêtes OPTIONS
@@ -221,26 +228,22 @@ const server = http.createServer((req, res) => {
 
     //affichage la list des BDD
   } else if (req.method === "GET" && req.url === "/") {
-    fs.readFile('data.json', 'utf8', (err, data) => {
-    if (err) throw err;
-    // Vérifier si le fichier est vide
-      if(data.trim.length <= 0){
+    fs.readFile("data.json", "utf8", (err, data) => {
+      if (err) throw err;
+      // Vérifier si le fichier est vide
+      if (data.trim.length <= 0) {
         const maskedData = JSON.stringify(database, (key, value) =>
-          key === 'table' ? undefined : value
+          key === "table" ? undefined : value
         );
         res.statusCode = 200;
         res.setHeader("Content-Type", "application/json");
         res.end(maskedData);
-    } else {
-      res.statusCode = 200;
-      res.setHeader("Content-Type", "application/json");
-      res.end(data);
-    }
-    
+      } else {
+        res.statusCode = 200;
+        res.setHeader("Content-Type", "application/json");
+        res.end(data);
+      }
     });
-    // res.statusCode = 200;
-    // res.setHeader("Content-Type", "application/json");
-    // res.end(JSON.stringify(database));
   } else if (
     req.method === "DELETE" && //suppression de la BDD
     path_database
@@ -253,15 +256,13 @@ const server = http.createServer((req, res) => {
   } else if (req.method === "GET" && path_database) {
     let result = database.find((item) => item.name === path_database);
     const maskedData = JSON.stringify(result, (key, value) =>
-    key === 'data' ? undefined : value
+      key === "data" ? undefined : value
     );
-    if (result) { 
+    if (result) {
       res.statusCode = 200;
       res.setHeader("Content-Type", "application/json");
       res.end(maskedData);
     }
-    
-
 
     // création de la table
   } else if (req.method === "PUT" && path_database) {
@@ -275,36 +276,44 @@ const server = http.createServer((req, res) => {
     const segments = splitUrl(req.url);
     if (req.url.startsWith("/search")) {
       const result = findObjectByName(database, query.name);
-      if (result !== null) { 
+      if (result !== null) {
         res.statusCode = 200;
         res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify(result));
-      } 
+      }
     } else {
-      for (let i = 0; i < database.length; i++) {
-        for (let j = 0; j < database[i].table.length; j++) {
-          for(let k = 0; k < database[i].table[j].data.length; k++){
-            console.log(database[i].table[j].id, req.url)
-            if (database[i].table[j].id === req.url) {
+      if (segments.length <= 2) {
+        for (let i = 0; i < database.length; i++) {
+          for (let j = 0; j < database[i].table.length; j++) {
+            if (database[i].table[j].id === `/${segments[1]}`) {
               res.statusCode = 200;
-                res.setHeader("Content-Type", "application/json");
-                res.end(JSON.stringify(database[i].table[j]));
-              } else {
-                res.statusCode = 400;
-                res.setHeader("Content-Type", "text/plain");
-                res.end(`Bad request  for table ${req.url}`);
+              res.setHeader("Content-Type", "application/json");
+              res.end(JSON.stringify(database[i].table[j]));
+            } else {
+              res.statusCode = 400;
+              res.setHeader("Content-Type", "text/plain");
+              res.end(`Bad request  for table ${req.url}`);
             }
+            // for (let k = 0; k < database[i].table[j].data.length; k++) {
+            //   if (database[i].table[j].id === `/${segments[1]}`) {
+            //     res.statusCode = 200;
+            //     res.setHeader("Content-Type", "application/json");
+            //     res.end(JSON.stringify(database[i].table[j]));
+            //     break;
+            //   } else {
+            //     res.statusCode = 400;
+            //     res.setHeader("Content-Type", "text/plain");
+            //     res.end(`Bad request  for table ${req.url}`);
+            //   }
+            // }
+            break;
           }
-          break;     
         }
       }
-     
-    
     }
-      
   }
   // POST DATA /:database/:table
-  else if (req.method === "POST" && req.url) { 
+  else if (req.method === "POST" && req.url) {
     const segments = splitUrl(req.url);
     let body = "";
     req.on("data", (chunk) => {
@@ -315,8 +324,8 @@ const server = http.createServer((req, res) => {
       for (let i = 0; i < database.length; i++) {
         for (let j = 0; j < database[i].table.length; j++) {
           if (database[i].table[j].name === segments[1]) {
-            if(database[i].table[j].data.id){
-              console.log(database[i].table[j].data)
+            if (database[i].table[j].data.id) {
+              console.log(database[i].table[j].data);
             }
             database[i].table[j].data.push(data);
             res.statusCode = 200;
@@ -328,16 +337,14 @@ const server = http.createServer((req, res) => {
       }
     });
   }
-    // DELETE TABLE /ynov/users
-  else if (req.method === "DELETE" && "/:database/:table") {
+  // DELETE TABLE /ynov/users
+  else if (req.method === "DELETE" && req.url) {
     const segments = splitUrl(req.url);
     if (segments.length <= 2) {
       for (let i = 0; i < database.length; i++) {
         for (let j = 0; j < database[i].table.length; j++) {
-          console.log("test"+database[i].table, segments[1])
           if (database[i].table[j].name === segments[1]) {
-            deleteObject(database[i].table, segments[1]);
-            console.log(segments.length);
+            deleteObject(database[i].table, `/${segments[1]}`);
             res.statusCode = 200;
             res.setHeader("Content-Type", "application/json");
             res.end(JSON.stringify(database[i].table));
@@ -350,29 +357,29 @@ const server = http.createServer((req, res) => {
         }
         break;
       }
-    } else if(segments.length >= 3) {
+    } else if (segments.length >= 3) {
       // DELETE DATA /ynov/users/:name
       for (let i = 0; i < database.length; i++) {
         for (let j = 0; j < database[i].table.length; j++) {
           if (database[i].table[j].name === segments[1]) {
             for (let k = 0; k < database[i].table[j].data.length; k++) {
               if (database[i].table[j].data[k].name === segments[2]) {
-                deleteObject(database[i].table[j].data, segments[2]);
+                deleteObject(database[i].table[j].data, `/${segments[2]}`);
                 res.statusCode = 200;
                 res.setHeader("Content-Type", "application/json");
                 res.end(JSON.stringify(database[i].table[j].data));
               }
-              break; 
-              }
+              break;
             }
-          } 
-          break;
+          }
         }
-      } 
-  }   
-    
+        break;
+      }
+    }
+  }
+
   // PUT DATA /:database/:table/:id
-  else if (req.method === "PUT" && req.url) { 
+  else if (req.method === "PUT" && req.url) {
     const segments = splitUrl(req.url);
     let body = "";
     req.on("data", (chunk) => {
@@ -383,7 +390,7 @@ const server = http.createServer((req, res) => {
       for (let i = 0; i < database.length; i++) {
         for (let j = 0; j < database[i].table.length; j++) {
           if (database[i].table[j].name === segments[1]) {
-            for (let k = 0; k < database[i].table[j].data.length; k++) { 
+            for (let k = 0; k < database[i].table[j].data.length; k++) {
               if (database[i].table[j].data[k].id.toString() === segments[2]) {
                 database[i].table[j].data[k] = data;
                 res.statusCode = 200;
@@ -398,9 +405,7 @@ const server = http.createServer((req, res) => {
                 );
                 break;
               }
-              
             }
-            
           } else {
             res.statusCode = 404;
             res.setHeader("Content-Type", "text/plain");
@@ -411,15 +416,12 @@ const server = http.createServer((req, res) => {
       }
     });
   }
-  
-  
-  
+
   // url API pas bon
   else {
     res.statusCode = 404;
     res.end();
   }
-
 });
 
 server.listen(PORT, () => {
