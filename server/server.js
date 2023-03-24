@@ -97,21 +97,19 @@ const handlePutTable = (req, res) => {
     body += chunk.toString();
   });
   req.on("end", () => {
-    let path = req.url.replace("/", "");
     const updatedEntry = JSON.parse(body);
     let found = false;
     for (let i = 0; i < database.length; i++) {
-      if (database[i].name === path) {
         for (let j = 0; j < database[i].table.length; j++) {
-          if (database[i].table[j].id === updatedEntry.id) {
+          const index = req.url.indexOf(database.id)
+          if (index !== -1){
             database[i].table[j].name = updatedEntry.name;
-            
+            database[i].table[j].id = updatedEntry.id
             found = true;
-            break;
           }
+          break;
         }
-        break;
-      }
+      break;
     }
     if (found) {
       res.statusCode = 200;
@@ -163,7 +161,7 @@ function findStringInArray(arr, str) {
 // Suppression d'un élément dans un tableau
 function deleteObject(tableau, chaineRecherche) {
   for (let i = 0; i < tableau.length; i++) {
-    if (tableau[i].name === chaineRecherche) {
+    if (tableau[i].id === chaineRecherche) {
       tableau.splice(i, 1);
       return true;
     }
@@ -201,7 +199,7 @@ const server = http.createServer((req, res) => {
   const query = parsedUrl.query;
   // Ajoute les en-têtes CORS
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, DELETE");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   res.setHeader("Access-Control-Allow-Credentials", true);
 
@@ -247,7 +245,7 @@ const server = http.createServer((req, res) => {
     req.method === "DELETE" && //suppression de la BDD
     path_database
   ) {
-    deleteObject(database, path_database);
+    deleteObject(database, req.url);
     res.writeHead(200, { "Content-Type": "text/plain" });
     res.end(`BDD suprimmé`);
 
@@ -285,18 +283,23 @@ const server = http.createServer((req, res) => {
     } else {
       for (let i = 0; i < database.length; i++) {
         for (let j = 0; j < database[i].table.length; j++) {
-          if (database[i].table[j].name === segments[1]) {
-            res.statusCode = 200;
-            res.setHeader("Content-Type", "application/json");
-            res.end(JSON.stringify(database[i].table[j].data));
-          } else {
-            res.statusCode = 400;
-            res.setHeader("Content-Type", "text/plain");
-            res.end(`Bad request  for table ${req.url}`);
+          for(let k = 0; k < database[i].table[j].data.length; k++){
+            console.log(database[i].table[j].id, req.url)
+            if (database[i].table[j].id === req.url) {
+              res.statusCode = 200;
+                res.setHeader("Content-Type", "application/json");
+                res.end(JSON.stringify(database[i].table[j]));
+              } else {
+                res.statusCode = 400;
+                res.setHeader("Content-Type", "text/plain");
+                res.end(`Bad request  for table ${req.url}`);
+            }
           }
-          break;
+          break;     
         }
       }
+     
+    
     }
       
   }
@@ -331,6 +334,7 @@ const server = http.createServer((req, res) => {
     if (segments.length <= 2) {
       for (let i = 0; i < database.length; i++) {
         for (let j = 0; j < database[i].table.length; j++) {
+          console.log("test"+database[i].table, segments[1])
           if (database[i].table[j].name === segments[1]) {
             deleteObject(database[i].table, segments[1]);
             console.log(segments.length);
