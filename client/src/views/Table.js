@@ -4,9 +4,8 @@ import { Link } from "react-router-dom";
 
 function Table() {
   const nameDatabase = window.location.pathname;
-  const [users, setUsers] = useState([]);
+  const [table, setTable] = useState([]);
   const [nameTable, setNameTable] = useState("");
-  const [updatenameTable, setUpdatenameTable] = useState("");
   const path_database = nameDatabase.replace("/", "");
 
   useEffect(() => {
@@ -15,7 +14,7 @@ function Table() {
       .get(`http://localhost:8080${nameDatabase}`)
       .then((response) => {
         console.log(response.data, path_database);
-        setUsers(response.data);
+        setTable(response.data.table);
       })
       .catch((error) => {
         console.log(error);
@@ -28,11 +27,11 @@ function Table() {
     // Exemple de requête POST à une API
     axios
       .post(`http://localhost:8080${nameDatabase}`, {
-        id: users.length + 1,
+        id: `/${nameTable}`,
         name: nameTable,
         data: [],
       })
-      .then((response) => {
+      .then(() => {
         window.location.reload(false);
       })
       .catch((error) => {
@@ -40,16 +39,6 @@ function Table() {
       });
   };
 
-  // TODO: UPDATE NEW USER
-  const handleUpdate = (item) => { 
-    const data = item;
-    data.name = updatenameTable;
-    console.log(data);
-    axios.put(`http://localhost:8080/${path_database}`, data).then(() => {
-      console.log("Update Table");
-      window.location.reload(false);
-    });
-  }
   // TODO: DELETE NEW USER
   const handleDelete = (table) => {
     
@@ -78,26 +67,15 @@ function Table() {
           <tr>
             <th>Nom</th>
             <th>Voir</th>
-            <th>Update</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          {users.map((item, key) => (
+          {table.map((item, key) => (
             <tr key={key}>
               <td>{item.name}</td>
               <Link to={item.name}>Voir</Link>
               <td>
-                <input
-                  type="text"
-                  placeholder="Change name"
-                  onChange={(e) => setUpdatenameTable(e.target.value)}
-                />
-              </td>
-              <td>
-                <button className="update" onClick={() => handleUpdate(item)}>
-                  Update table
-                </button>
                 <button
                   className="delete"
                   onClick={() => handleDelete(item.name)}
