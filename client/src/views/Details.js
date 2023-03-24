@@ -50,14 +50,13 @@ function Details() {
           console.log(error);
         });
     } else {
-      alert('champs manquant')
+      alert("champs manquant");
     }
-    
   };
 
   // TODO: UPDATE NEW USER
   const handleUpdate = (item) => {
-    if (mapState.name !== "" && mapState.age !== 0) { 
+    if (mapState.name !== "" && mapState.age !== 0) {
       axios
         .put(`http://localhost:8080/${segments[0]}/${segments[1]}/${item.id}`, {
           name: mapState.name,
@@ -72,12 +71,11 @@ function Details() {
           console.log(error);
         });
     } else {
-      alert('champs manquant')
+      alert("champs manquant");
     }
-    
   };
   // TODO: FILTER DATA
-  const handleFilter = (event) => { 
+  const handleFilter = (event) => {
     event.preventDefault();
     if (filter !== "") {
       axios
@@ -98,7 +96,7 @@ function Details() {
           console.log(error);
         });
     }
-  }
+  };
 
   // TODO: DELETE NEW USER
   const handleDelete = (id) => {

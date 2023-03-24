@@ -41,7 +41,7 @@ function Table() {
   };
 
   // TODO: UPDATE NEW USER
-  const handleUpdate = (item) => { 
+  const handleUpdate = (item) => {
     const data = item;
     data.name = updatenameTable;
     console.log(data);
@@ -49,10 +49,9 @@ function Table() {
       console.log("Update Table");
       window.location.reload(false);
     });
-  }
+  };
   // TODO: DELETE NEW USER
   const handleDelete = (table) => {
-    
     axios.delete(`http://localhost:8080/${path_database}/${table}`).then(() => {
       console.log("Delete Table");
       window.location.reload(false);
