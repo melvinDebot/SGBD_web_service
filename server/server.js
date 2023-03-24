@@ -1,15 +1,25 @@
 const http = require("http");
 const url = require("url");
+const fs = require('fs');
+const { json } = require("node:stream/consumers");
+const { Console } = require("console");
+
 
 const PORT = 8080;
 
-const database = [];
+let database = [];
+
+function saveData( ){
+  fs.writeFile('data.json', JSON.stringify(database), (err) => {
+    if (err) throw err;
+    console.log('Les données ont été sauvegardées dans le fichier data.json');
+  });
+} 
 
 function checkDoublon(e) {
   for (let i = 0; i < e.length; i++) {
       for (let j = i + 1; j < e.length; j++) {
-        console.log(e[i], e[j])
-          if (JSON.stringify(e[i]) === JSON.stringify(e[j])) {
+          if (JSON.stringify(e[i].id) === JSON.stringify(e[j].id)) {
           e.splice(j, 1);
            j--;
           }
@@ -56,10 +66,8 @@ const handlePostTable = (req, res) => {
   });
   req.on("end", () => {
     let path = req.url.replace("/", "");
-    //const result = findObjectByName(database, query.name);
     const newEntry = JSON.parse(body);
     const expectedBody = {"id":1,"name":"users","data":[]}
-    console.log(database)
     for (let i = 0; i < database.length; i++) {
       if (database[i].name === path) {
         if (JSON.stringify(Object.keys(newEntry)) === JSON.stringify(Object.keys(expectedBody))){
@@ -182,6 +190,11 @@ function findObjectByName(arr, name) {
   return null;
 }
 
+ // Stocker l'ID du timer dans une variable
+ setInterval(saveData, 300000);
+
+
+
 // Crée le serveur web
 const server = http.createServer((req, res) => {
   const parsedUrl = url.parse(req.url, true); // true sets the query property of parsedUrl to an object
@@ -193,6 +206,8 @@ const server = http.createServer((req, res) => {
   res.setHeader("Access-Control-Allow-Credentials", true);
 
   let path_database = findStringInArray(database, req.url.replace("/", ""));
+
+  console.log(database)
 
   if (req.method === "OPTIONS") {
     // Répond avec les en-têtes CORS appropriés pour les requêtes OPTIONS
@@ -208,9 +223,26 @@ const server = http.createServer((req, res) => {
 
     //affichage la list des BDD
   } else if (req.method === "GET" && req.url === "/") {
-    res.statusCode = 200;
-    res.setHeader("Content-Type", "application/json");
-    res.end(JSON.stringify(database));
+    fs.readFile('data.json', 'utf8', (err, data) => {
+    if (err) throw err;
+    // Vérifier si le fichier est vide
+      if(data.trim.length <= 0){
+        const maskedData = JSON.stringify(database, (key, value) =>
+          key === 'table' ? undefined : value
+        );
+        res.statusCode = 200;
+        res.setHeader("Content-Type", "application/json");
+        res.end(maskedData);
+    } else {
+      res.statusCode = 200;
+      res.setHeader("Content-Type", "application/json");
+      res.end(data);
+    }
+    
+    });
+    // res.statusCode = 200;
+    // res.setHeader("Content-Type", "application/json");
+    // res.end(JSON.stringify(database));
   } else if (
     req.method === "DELETE" && //suppression de la BDD
     path_database
@@ -222,13 +254,13 @@ const server = http.createServer((req, res) => {
     //affichage la liste des tables
   } else if (req.method === "GET" && path_database) {
     let result = database.find((item) => item.name === path_database);
+    const maskedData = JSON.stringify(result, (key, value) =>
+    key === 'data' ? undefined : value
+    );
     if (result) { 
       res.statusCode = 200;
       res.setHeader("Content-Type", "application/json");
-      res.end(JSON.stringify(result.table));
-    } else {
-      res.statusCode = 404;
-      res.end(`Not found ${path_database}`);
+      res.end(maskedData);
     }
     
 
@@ -249,11 +281,7 @@ const server = http.createServer((req, res) => {
         res.statusCode = 200;
         res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify(result));
-      } else {
-        res.statusCode = 404;
-        res.setHeader("Content-Type", "text/plain");
-        res.end(`Not found data ${req.url}`);
-      }
+      } 
     } else {
       for (let i = 0; i < database.length; i++) {
         for (let j = 0; j < database[i].table.length; j++) {
@@ -284,20 +312,15 @@ const server = http.createServer((req, res) => {
       for (let i = 0; i < database.length; i++) {
         for (let j = 0; j < database[i].table.length; j++) {
           if (database[i].table[j].name === segments[1]) {
+            if(database[i].table[j].data.id){
+              console.log(database[i].table[j].data)
+            }
             database[i].table[j].data.push(data);
             res.statusCode = 200;
             res.setHeader("Content-Type", "application/json");
             res.end(JSON.stringify(database[i].table[j].data));
             break;
-          } else {
-            res.statusCode = 404;
-            res.setHeader("Content-Type", "text/plain");
-            res.end(
-              `path not found ${database[i].table[j].name} ${segments[1]}`
-            );
-            break;
           }
-          
         }
       }
     });
@@ -334,30 +357,15 @@ const server = http.createServer((req, res) => {
                 res.statusCode = 200;
                 res.setHeader("Content-Type", "application/json");
                 res.end(JSON.stringify(database[i].table[j].data));
-
-                break;
-              } else {
-                res.statusCode = 400;
-                res.setHeader("Content-Type", "text/plain");
-                res.end(
-                  `the server cannot or will not process the request due to something that is perceived to be a client error `
-                );
-                break;
+              }
+              break; 
               }
             }
-          } else {
-            res.statusCode = 404;
-            res.setHeader("Content-Type", "text/plain");
-            res.end(`path not found ${req.url}`);
-          }
+          } 
           break;
         }
-      }
-    }
-    
-  }
-
-    
+      } 
+  }   
     
   // PUT DATA /:database/:table/:id
   else if (req.method === "PUT" && req.url) { 
@@ -407,8 +415,20 @@ const server = http.createServer((req, res) => {
     res.statusCode = 404;
     res.end();
   }
+
 });
 
 server.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });
+
+// // Arrêter le serveur après 5 secondes
+// setTimeout(() => {
+//   server.close();
+// }, 10000);
+
+// // Vérifier si le serveur est arrêté
+// server.on('close', () => {
+//   //clearInterval(timerId);
+//   console.log('Le serveur est arrêté');
+// });
