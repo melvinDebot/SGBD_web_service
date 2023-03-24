@@ -294,18 +294,6 @@ const server = http.createServer((req, res) => {
               res.setHeader("Content-Type", "text/plain");
               res.end(`Bad request  for table ${req.url}`);
             }
-            // for (let k = 0; k < database[i].table[j].data.length; k++) {
-            //   if (database[i].table[j].id === `/${segments[1]}`) {
-            //     res.statusCode = 200;
-            //     res.setHeader("Content-Type", "application/json");
-            //     res.end(JSON.stringify(database[i].table[j]));
-            //     break;
-            //   } else {
-            //     res.statusCode = 400;
-            //     res.setHeader("Content-Type", "text/plain");
-            //     res.end(`Bad request  for table ${req.url}`);
-            //   }
-            // }
             break;
           }
         }
