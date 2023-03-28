@@ -27,19 +27,8 @@ function Home() {
   // CREATE NEW DATABASE
   const handlePost = (event) => {
     event.preventDefault();
-    createDatabase(database.length + 1, nameDatabase, [])
+    createDatabase(`/${nameDatabase}`, nameDatabase, [])
     window.location.reload(false);
-  };
-
-  // TODO: UPDATE DATABASE
-  const handleUpdate = (item) => {
-    const data = item;
-    data.name = updateNameDatabase;
-    console.log(data);
-    axios.put(`http://localhost:8080`, data).then(() => {
-      console.log("Update Table");
-      window.location.reload(false);
-    });
   };
 
   const handleDelete = (database) => {
@@ -70,7 +59,7 @@ function Home() {
           <tr>
             <th>Nom</th>
             <th>Voir</th>
-            <th>Update</th>
+            
             <th>Delete</th>
           </tr>
         </thead>
@@ -81,16 +70,7 @@ function Home() {
               <td>
                 <Link to={item.name}>Voir</Link>
               </td>
-              <td>
-                <input
-                  type="text"
-                  placeholder="Update name database"
-                  onChange={(e) => setUpdateNameDatabase(e.target.value)}
-                />
-                <button className="update" onClick={() => handleUpdate(item)}>
-                  Update
-                </button>
-              </td>
+              
               <td>
                 <button
                   onClick={() => handleDelete(item.name)}

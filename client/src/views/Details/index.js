@@ -23,7 +23,7 @@ function Details() {
       .get(`http://localhost:8080/${segments[0]}/${segments[1]}`)
       .then((response) => {
         console.log(response.data);
-        setData(response.data);
+        setData(response.data.data);
       })
       .catch((error) => {
         console.log(error);
@@ -39,7 +39,7 @@ function Details() {
       axios
         .post(`http://localhost:8080/${segments[0]}/${segments[1]}`, {
           name: nameData,
-          id: data.length + 1,
+          id: `/${nameData}`,
           age: age,
         })
         .then((response) => {
@@ -81,6 +81,7 @@ function Details() {
       axios
         .get(`http://localhost:8080/search?name=${filter}`)
         .then((response) => {
+          console.log(response.data);
           setData([response.data]);
         })
         .catch((error) => {
@@ -90,7 +91,7 @@ function Details() {
       axios
         .get(`http://localhost:8080/${segments[0]}/${segments[1]}`)
         .then((response) => {
-          setData(response.data);
+          setData(response.data.data);
         })
         .catch((error) => {
           console.log(error);
@@ -141,46 +142,17 @@ function Details() {
           <tr>
             <th>Nom</th>
             <th>age</th>
-            <th>Update name</th>
-            <th>Update age</th>
             <th>Action</th>
           </tr>
         </thead>
         <tbody>
-          {data.map((item, key) => (
+          {data?.map((item, key) => (
             <tr key={key}>
               <td>{item.name}</td>
               <td>{item.age}</td>
+              
               <td>
-                <input
-                  type="text"
-                  placeholder="Change name"
-                  onChange={(e) => {
-                    if (e.target.value !== "") {
-                      setMapState((prevState) => {
-                        return { ...prevState, name: e.target.value };
-                      });
-                    } else {
-                      alert("Please enter a name");
-                    }
-                  }}
-                />
-              </td>
-              <td>
-                <input
-                  type="number"
-                  placeholder="Change age"
-                  onChange={(e) =>
-                    setMapState((prevState) => {
-                      return { ...prevState, age: e.target.value };
-                    })
-                  }
-                />
-              </td>
-              <td>
-                <button className="update" onClick={() => handleUpdate(item)}>
-                  Update data
-                </button>
+                
                 <button
                   className="delete"
                   onClick={() => handleDelete(item.name)}

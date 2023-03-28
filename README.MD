@@ -44,7 +44,11 @@ The REST API to the example app is described below.
 
 `POST http://localhost:8080`
 
-    {"id":1,"name":"Foo","table":[]}
+    {
+        "id": "/ynov1",
+        "name": "ynov1"
+        "table": []
+    }
 
 ### Response
 
@@ -56,7 +60,10 @@ The REST API to the example app is described below.
     Location: /thing/1
     Content-Length: 36
 
-    {"id":1,"name":"Foo","table":[]}
+     {
+        "id": "/ynov1",
+        "name": "ynov1"
+    }
 
 ## Get a specific database👁‍🗨
 
@@ -74,7 +81,22 @@ The REST API to the example app is described below.
     Content-Type: application/json
     Content-Length: 36
 
-    {"id":1,"name":"users","data":[]}
+     {
+        "id": "/ynov1",
+        "name":"ynov1",
+        "table": [
+            {
+                "id": "/user",
+                "name": "users",
+                
+            },
+            {
+                "id": "/products",
+                "name": "products",
+                
+            }
+        ]
+    }
 
 ## Get a table database specific👁‍🗨
 
@@ -92,14 +114,30 @@ The REST API to the example app is described below.
     Content-Type: application/json
     Content-Length: 35
 
-    {}
+    {
+        "id": "/users",
+        "name": "users",
+        "data": [
+            {
+                "name": "vince",
+                "age": 10,
+                "id": "/vince"
+            },
+            {
+                "name": "vincea",
+                "age": 10,
+                "id": "/vincea"
+            }
+        ]
+    }
     
 ## Create data👁‍🗨
 
 ### Request
 
 `POST http://localhost:8080/nom_database/nom_table`
-{"name": "melvin", "age": 10, "id": 0}
+
+    {"name": "melvin", "age": 10, "id": "/melvin"}
 
 ### Response
 
@@ -110,7 +148,7 @@ The REST API to the example app is described below.
     Content-Type: application/json
     Content-Length: 35
 
-    {"name": "melvin", "age": 10, "id": 0}
+    {"name": "melvin", "age": 10, "id": "/melvin"}
     
 ### Filter by name data
 
@@ -126,27 +164,13 @@ The REST API to the example app is described below.
     Content-Type: application/json
     Content-Length: 35
 
-    { "name": "melvin", "age": 10, "id": 0}
+    { "name": "melvin", "age": 10, "id": "/melvin"}
     
- ### Modification data
 
-`PUT http://localhost:8080/nom_database/nom_table/data_id`
- {"name": "melvin", "age": 10, "id": 0}
-
-### Response
-
-    HTTP/1.1 200 OK
-    Date: Thu, 24 Feb 2011 12:36:30 GMT
-    Status: 200 OK
-    Connection: close
-    Content-Type: application/json
-    Content-Length: 35
-
-    { "name": "melvin", "age": 10, "id": 0}
     
  ### Delete data
 
-`DELETE http://localhost:8080/nom_database/nom_table/data_id`
+`DELETE http://localhost:8080/nom_database/nom_table/data_name`
 
 
 ### Response
@@ -158,7 +182,7 @@ The REST API to the example app is described below.
     Content-Type: application/json
     Content-Length: 35
 
-    
+    []
 
 ## Create new table➕
 
@@ -166,7 +190,7 @@ The REST API to the example app is described below.
 
 `POST http://localhost:8080/nom_database`
 
-    {"id":1,"name":"users","data":[]}
+    {"id":"/users","name":"users"}
 
 ### Response
 
@@ -178,46 +202,8 @@ The REST API to the example app is described below.
     Location: /thing/2
     Content-Length: 35
 
-    {"id":1,"name":"users","data":[]}
+    {"id":"/users","name":"users"}
 
-
-## Update database🔁
-
-### Request
-
-`PUT http://localhost:8080`
-
-    {"id":1,"name":"bar","table":[]}
-
-### Response
-
-    HTTP/1.1 200 OK
-    Date: Thu, 24 Feb 2011 12:36:31 GMT
-    Status: 200 OK
-    Connection: close
-    Content-Type: application/json
-    Content-Length: 40
-
-    {"id":1,"name":"bar","table":[]}
-
-
-## Update table🔁
-
-### Request
-
-`PUT http://localhost:8080/nom_databse`
-
-
-### Response
-
-    HTTP/1.1 200 OK
-    Date: Thu, 24 Feb 2011 12:36:31 GMT
-    Status: 200 OK
-    Connection: close
-    Content-Type: application/json
-    Content-Length: 41
-
-    {"id":1,"name":"product2","data[]}
 
 
 ## Delete a Thing🗑
@@ -250,4 +236,24 @@ The REST API to the example app is described below.
     Status: 200 OK
 
     []
+
+# Features added
+Restore data via JSON file if the server crashes
+``` javascript
+function saveData() {
+  fs.writeFile("data.json", JSON.stringify(database), (err) => {
+    if (err) throw err;
+    console.log("Les données ont été sauvegardées dans le fichier data.json");
+  });
+}
+
+fs.readFile("data.json", (err, data) => {
+  if (err) throw err;
+  if (data.length > 0) {
+    database = JSON.parse(data);
+  } else {
+    database = [];
+  }
+});
+```
 
