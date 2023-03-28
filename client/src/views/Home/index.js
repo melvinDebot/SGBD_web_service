@@ -1,42 +1,34 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import Popup from "../../components/Popup/Popup";
+import { getDatabase, createDatabase } from "../../libs/utils";
 
 function Home() {
   const [nameDatabase, setNameDatabase] = useState("");
   const [updateNameDatabase, setUpdateNameDatabase] = useState("");
   const [database, setDatabase] = useState([]);
+
+  
   useEffect(() => {
-    // Exemple de requête GET à une API
-    axios
-      .get("http://localhost:8080")
-      .then((response) => {
-        console.log(response.data);
-        setDatabase(response.data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    const loadData = async () => {
+      getDatabase()
+        .then((res) => {
+          setDatabase(res.data);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    };
+    loadData()
+    
   }, []);
 
   // CREATE NEW DATABASE
   const handlePost = (event) => {
     event.preventDefault();
-    const newObject = {
-      id: database.length + 1,
-      name: nameDatabase,
-      table: [],
-    };
-    // Exemple de requête POST à une API
-    axios
-      .post("http://localhost:8080", newObject)
-      .then((response) => {
-        // ADD POPUP
-        window.location.reload(false);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    createDatabase(database.length + 1, nameDatabase, [])
+    window.location.reload(false);
   };
 
   // TODO: UPDATE DATABASE
@@ -60,6 +52,7 @@ function Home() {
 
   return (
     <div>
+      <Popup title="My Title" />
       <h2>DATABASE</h2>
       <form>
         <input
@@ -81,9 +74,9 @@ function Home() {
             <th>Delete</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody id="user-item">
           {database.map((item, key) => (
-            <tr key={key}>
+            <tr key={item.id}>
               <td>{item.name}</td>
               <td>
                 <Link to={item.name}>Voir</Link>

@@ -1,16 +1,10 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import ListView from "../views/ListView";
 import axios from "axios";
-import Title from "../components/Title";
 
 jest.mock("axios");
 
-describe("Test component Title", () => {
-  it("should render the title", () => {
-    render(<Title title="My Title" />);
-    expect(screen.getByText("My Title")).toBeInTheDocument();
-  });
-});
+
 
 describe("Test View ListView", () => {
   // Mock des données
