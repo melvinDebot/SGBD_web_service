@@ -1,7 +1,11 @@
 import React from "react";
 
-const Popup = ({ title }) => {
-  return <h3>{title}</h3>;
+const Popup = ({ title, color }) => {
+  return (
+    <div className="popup" style={{ backgroundColor: color }}>
+      <h4>{title}</h4>
+    </div>
+  );
 };
 
 export default Popup;

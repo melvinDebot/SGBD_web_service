@@ -1,9 +1,8 @@
 import { Routes, Route } from "react-router-dom";
-import Home from './views/Home';
+import Home from "./views/Home";
 import Table from "./views/Table";
 import Details from "./views/Details";
 import PageNotFound from "./views/PageNotFound";
-import ListView from "./views/ListView";
 import "./App.css";
 
 function App() {

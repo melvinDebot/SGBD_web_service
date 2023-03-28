@@ -1,10 +1,15 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import Details from "./index";
-import axios from "axios";
+import { getData } from "../../libs/utils";
 
 describe("Test View Details", () => {
-  // Mock des données
+  // Test si le call api retourne un 400
+  test("should return a 400 status code for data", async () => {
+    const res = await getData();
+    expect(res.status).toBe(400);
+  });
 
+  // Test si la page contient le titre "Filter"
   test("Should check if this title exists", () => {
     // Génération DOM virtuel
     render(<Details />);
