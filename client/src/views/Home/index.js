@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
 import Popup from "../../components/Popup/Popup";
-import { getDatabase, createDatabase } from "../../libs/utils";
+import { getDatabase, createDatabase, deleteDatabase } from "../../libs/utils";
 
 function Home() {
   const [nameDatabase, setNameDatabase] = useState("");
-  const [updateNameDatabase, setUpdateNameDatabase] = useState("");
   const [database, setDatabase] = useState([]);
+  const [dataPopup, setDataPopup] = useState({
+    title: "",
+    color: "",
+    isShow: false,
+  });
 
-  
   useEffect(() => {
     const loadData = async () => {
       getDatabase()
@@ -17,31 +19,49 @@ function Home() {
           setDatabase(res.data);
         })
         .catch((error) => {
+          setDataPopup({
+            title: "error get database!",
+            color: "#FF796F",
+            isShow: true,
+          });
           console.log(error);
         });
     };
-    loadData()
-    
+    loadData();
   }, []);
 
   // CREATE NEW DATABASE
   const handlePost = (event) => {
     event.preventDefault();
-    createDatabase(`/${nameDatabase}`, nameDatabase, [])
-    window.location.reload(false);
+    createDatabase(`/${nameDatabase}`, nameDatabase, []);
+    setDataPopup({
+      title: `Database ${nameDatabase} created!`,
+      color: "#19C16B",
+      isShow: true,
+    });
+    setTimeout(() => {
+      window.location.reload(false);
+    }, 1000);
   };
 
+  // DELETE DATABASE
   const handleDelete = (database) => {
-    console.log(database);
-    axios.delete(`http://localhost:8080/${database}`).then(() => {
-      console.log("Delete Database");
-      window.location.reload(false);
+    deleteDatabase(database);
+    setDataPopup({
+      title: `Database ${database} delete!`,
+      color: "#19C16B",
+      isShow: true,
     });
+    setTimeout(() => {
+      window.location.reload(false);
+    }, 1000);
   };
 
   return (
     <div>
-      <Popup title="My Title" />
+      {dataPopup.isShow && (
+        <Popup title={dataPopup.title} color={dataPopup.color} />
+      )}
       <h2>DATABASE</h2>
       <form>
         <input
@@ -59,18 +79,17 @@ function Home() {
           <tr>
             <th>Nom</th>
             <th>Voir</th>
-            
             <th>Delete</th>
           </tr>
         </thead>
         <tbody id="user-item">
-          {database.map((item, key) => (
+          {database.map((item) => (
             <tr key={item.id}>
               <td>{item.name}</td>
               <td>
                 <Link to={item.name}>Voir</Link>
               </td>
-              
+
               <td>
                 <button
                   onClick={() => handleDelete(item.name)}

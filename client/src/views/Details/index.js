@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import { getData, filterData, deleteData, createData } from "../../libs/utils";
 
 function splitUrl(url) {
   const segments = url.split("/");
@@ -13,85 +13,41 @@ function Details() {
   const [age, setAge] = useState(0);
   const [filter, setFilter] = useState("");
 
-  const [mapState, setMapState] = useState({ name: "", age: 0, id: 0 });
-
   const segments = splitUrl(pathTable);
 
   useEffect(() => {
-    // Exemple de requête GET à une API
-    axios
-      .get(`http://localhost:8080/${segments[0]}/${segments[1]}`)
-      .then((response) => {
-        console.log(response.data);
-        setData(response.data.data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    const loadData = async () => {
+      getData(segments[0], segments[1])
+        .then((res) => {
+          setData(res.data.data);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    };
+    loadData();
   }, []);
 
   //CREATE NEW USER
   const handlePost = () => {
     // Exemple de requête POST à une API
     if (nameData !== "" && age !== 0) {
-      console.log(nameData, age);
-
-      axios
-        .post(`http://localhost:8080/${segments[0]}/${segments[1]}`, {
-          name: nameData,
-          id: `/${nameData}`,
-          age: age,
-        })
-        .then((response) => {
-          setMapState({ name: "", age: 0, id: 0 });
-          window.location.reload(false);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    } else {
-      alert("champs manquant");
+      createData(`/${nameData}`, nameData, age, segments[0], segments[1]);
+      window.location.reload(false);
     }
   };
 
-  // TODO: UPDATE NEW USER
-  const handleUpdate = (item) => {
-    if (mapState.name !== "" && mapState.age !== 0) {
-      axios
-        .put(`http://localhost:8080/${segments[0]}/${segments[1]}/${item.id}`, {
-          name: mapState.name,
-          age: mapState.age,
-          id: item.id,
-        })
-        .then((response) => {
-          setMapState({ name: "", age: 0, id: 0 });
-          window.location.reload(false);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    } else {
-      alert("champs manquant");
-    }
-  };
   // TODO: FILTER DATA
   const handleFilter = (event) => {
     event.preventDefault();
     if (filter !== "") {
-      axios
-        .get(`http://localhost:8080/search?name=${filter}`)
-        .then((response) => {
-          console.log(response.data);
-          setData([response.data]);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+      filterData(filter).then((res) => {
+        setData([res.data]);
+      });
     } else {
-      axios
-        .get(`http://localhost:8080/${segments[0]}/${segments[1]}`)
-        .then((response) => {
-          setData(response.data.data);
+      getData(segments[0], segments[1])
+        .then((res) => {
+          setData(res.data.data);
         })
         .catch((error) => {
           console.log(error);
@@ -101,12 +57,8 @@ function Details() {
 
   // TODO: DELETE NEW USER
   const handleDelete = (id) => {
-    axios
-      .delete(`http://localhost:8080/${segments[0]}/${segments[1]}/${id}`)
-      .then(() => {
-        console.log("Delete data");
-        window.location.reload(false);
-      });
+    deleteData(segments[0], segments[1], id);
+    window.location.reload(false);
   };
 
   return (
@@ -150,9 +102,8 @@ function Details() {
             <tr key={key}>
               <td>{item.name}</td>
               <td>{item.age}</td>
-              
+
               <td>
-                
                 <button
                   className="delete"
                   onClick={() => handleDelete(item.name)}
