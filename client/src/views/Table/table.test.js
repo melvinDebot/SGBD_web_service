@@ -1,10 +1,8 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import Table from "./index";
-import axios from "axios";
+import { getTable, createTable, deleteTable } from "../../libs/utils";
 
 describe("Test View Details", () => {
-  // Mock des données
-
   test("Should check if this title exists", () => {
     // Génération DOM virtuel
     render(<Table />);
