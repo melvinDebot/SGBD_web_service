@@ -1,6 +1,7 @@
 const http = require("http");
 const url = require("url");
 const fs = require("fs");
+const { Console } = require("console");
 
 const PORT = 8080;
 
@@ -52,16 +53,23 @@ const handlePost = (req, res) => {
     ) {
       database.push(newEntry);
       checkDoublon(database);
-      res.statusCode = 201;
-      res.setHeader("Content-Type", "text/plain");
-      res.end(`Votre base "${newEntry.name}" a été créer`);
+      res.writeHead(201, {'Content-Type': 'application/json'});
+      const successMessage = {
+        success: {
+          code: 201,
+          message: `Votre base ${newEntry.name} a été créer`
+        }
+      }; 
+      res.end(JSON.stringify(successMessage));
     } else {
-      res.statusCode = 401;
-      res.setHeader("Content-Type", "application/json");
+      res.writeHead(401, {'Content-Type': 'application/json'});
       const errorMessage = {
-        message: "Le format du body est invalide.",
-        format: expectedBody,
-      };
+        error: {
+          code: 401,
+          message: "Le format du body est invalide.",
+          format: expectedBody
+        }
+      }; 
       res.end(JSON.stringify(errorMessage));
     }
   });
@@ -84,16 +92,23 @@ const handlePostTable = (req, res) => {
         ) {
           database[i].table.push(newEntry);
           checkDoublon(database[i].table);
-          res.statusCode = 201;
-          res.setHeader("Content-Type", "text/plain");
-          res.end(`Votre base "${newEntry.name}" a été créer`);
+          res.writeHead(201, {'Content-Type': 'application/json'});
+          const successMessage = {
+            success: {
+              code: 201,
+              message: `Votre base ${newEntry.name} a été créer`
+            }
+          }; 
+          res.end(JSON.stringify(successMessage));
         } else {
-          res.statusCode = 401;
-          res.setHeader("Content-Type", "application/json");
+          res.writeHead(401, {'Content-Type': 'application/json'});
           const errorMessage = {
-            message: "Le format du body est invalide.",
-            format: expectedBody,
-          };
+            error: {
+              code: 401,
+              message: "Le format du body est invalide.",
+              format: expectedBody
+            }
+          };            
           res.end(JSON.stringify(errorMessage));
         }
         break;
@@ -101,65 +116,7 @@ const handlePostTable = (req, res) => {
     }
   });
 };
-// Modification d'une table
-const handlePutTable = (req, res) => {
-  let body = "";
-  req.on("data", (chunk) => {
-    body += chunk.toString();
-  });
-  req.on("end", () => {
-    const updatedEntry = JSON.parse(body);
-    let found = false;
-    for (let i = 0; i < database.length; i++) {
-      for (let j = 0; j < database[i].table.length; j++) {
-        const index = req.url.indexOf(database.id);
-        if (index !== -1) {
-          database[i].table[j].name = updatedEntry.name;
-          database[i].table[j].id = updatedEntry.id;
-          found = true;
-        }
-        break;
-      }
-      break;
-    }
-    if (found) {
-      res.statusCode = 200;
-      res.setHeader("Content-Type", "application/json");
-      res.end(JSON.stringify(updatedEntry));
-      //
-    } else {
-      res.statusCode = 400;
-      res.end("Bad request");
-    }
-  });
-};
-// Modification d'une database
-const handlePutDatabase = (req, res) => {
-  let body = "";
-  req.on("data", (chunk) => {
-    body += chunk.toString();
-  });
-  req.on("end", () => {
-    const updatedEntry = JSON.parse(body);
-    let found = true;
-    for (let i = 0; i < database.length; i++) {
-      if (database[i].id === updatedEntry.id) {
-        database[i].name = updatedEntry.name;
-        found = true;
-        break;
-      }
-    }
-    if (found) {
-      res.statusCode = 200;
-      res.setHeader("Content-Type", "application/json");
-      res.end(JSON.stringify(updatedEntry));
-      //
-    } else {
-      res.statusCode = 400;
-      res.end("Bad request");
-    }
-  });
-};
+
 // Recherche d'un élément dans un tableau
 function findStringInArray(arr, str) {
   for (let i = 0; i < arr.length; i++) {
@@ -214,17 +171,24 @@ const server = http.createServer((req, res) => {
 
   let path_database = findStringInArray(database, req.url.replace("/", ""));
 
+  console.log("donne ton chemin batard",path_database)
+
   if (req.method === "OPTIONS") {
     // Répond avec les en-têtes CORS appropriés pour les requêtes OPTIONS
     res.writeHead(200);
-    res.end();
+    res.end(); 
+  } else if (req.method === "PUT") {
+    const jsonMessage = {
+      error: {
+        code: 405,
+        message: 'Méthode PUT non autorisée pour cette ressource.'
+      }
+    }
+    res.writeHead(405, {'Content-Type': 'application/json'});
+    res.end(JSON.stringify(jsonMessage));
     //création de la bdd
   } else if (req.method === "POST" && req.url === "/") {
     handlePost(req, res);
-
-    //affichage la list des BDD
-  } else if (req.method === "PUT" && req.url === "/") {
-    handlePutDatabase(req, res);
 
     //affichage la list des BDD
   } else if (req.method === "GET" && req.url === "/") {
@@ -252,6 +216,15 @@ const server = http.createServer((req, res) => {
     res.writeHead(200, { "Content-Type": "text/plain" });
     res.end(`BDD suprimmé`);
 
+  } else if(path_database == null){
+    const jsonMessage = {
+      error: {
+        code: 404,
+        message: `Le chemin ${req.url} n'existe pas.`
+      }
+    }
+    res.writeHead(404, {'Content-Type': 'application/json'});
+    res.end(JSON.stringify(jsonMessage));
     //affichage la liste des tables
   } else if (req.method === "GET" && path_database) {
     let result = database.find((item) => item.name === path_database);
@@ -263,10 +236,7 @@ const server = http.createServer((req, res) => {
       res.setHeader("Content-Type", "application/json");
       res.end(maskedData);
     }
-
     // création de la table
-  } else if (req.method === "PUT" && path_database) {
-    handlePutTable(req, res);
   } else if (req.method === "POST" && path_database) {
     handlePostTable(req, res); // fonction qui crée la table
   }
@@ -283,18 +253,25 @@ const server = http.createServer((req, res) => {
       }
     } else {
       if (segments.length <= 2) {
-        for (let i = 0; i < database.length; i++) {
-          for (let j = 0; j < database[i].table.length; j++) {
-            if (database[i].table[j].id === `/${segments[1]}`) {
-              res.statusCode = 200;
-              res.setHeader("Content-Type", "application/json");
-              res.end(JSON.stringify(database[i].table[j]));
-            } else {
-              res.statusCode = 400;
-              res.setHeader("Content-Type", "text/plain");
-              res.end(`Bad request  for table ${req.url}`);
+        if(database.length <= 0){
+          const jsonMessage = {
+            error: {
+              code: 404,
+              message: `Le chemin ${req.url} n'existe pas.`
             }
-            break;
+          }
+          res.writeHead(404, {'Content-Type': 'application/json'});
+          res.end(JSON.stringify(jsonMessage));
+        } else {
+          for (let i = 0; i < database.length; i++) {
+            for (let j = 0; j < database[i].table.length; j++) {
+              if (database[i].table[j].id === `/${segments[1]}`) {
+                res.statusCode = 200;
+                res.setHeader("Content-Type", "application/json");
+                res.end(JSON.stringify(database[i].table[j]));
+              }
+              break;
+            }
           }
         }
       }
@@ -308,14 +285,11 @@ const server = http.createServer((req, res) => {
       body += chunk.toString();
     });
     req.on("end", () => {
-      const data = JSON.parse(body);
+      const bodyQuery = JSON.parse(body);
       for (let i = 0; i < database.length; i++) {
         for (let j = 0; j < database[i].table.length; j++) {
           if (database[i].table[j].name === segments[1]) {
-            if (database[i].table[j].data.id) {
-              console.log(database[i].table[j].data);
-            }
-            database[i].table[j].data.push(data);
+            database[i].table[j].data.push(bodyQuery);
             res.statusCode = 200;
             res.setHeader("Content-Type", "application/json");
             res.end(JSON.stringify(database[i].table[j].data));
@@ -336,10 +310,6 @@ const server = http.createServer((req, res) => {
             res.statusCode = 200;
             res.setHeader("Content-Type", "application/json");
             res.end(JSON.stringify(database[i].table));
-          } else {
-            res.statusCode = 404;
-            res.setHeader("Content-Type", "text/plain");
-            res.end(`path not found ${req.url}`);
           }
           break;
         }
@@ -366,49 +336,17 @@ const server = http.createServer((req, res) => {
     }
   }
 
-  // PUT DATA /:database/:table/:id
-  else if (req.method === "PUT" && req.url) {
-    const segments = splitUrl(req.url);
-    let body = "";
-    req.on("data", (chunk) => {
-      body += chunk.toString();
-    });
-    req.on("end", () => {
-      const data = JSON.parse(body);
-      for (let i = 0; i < database.length; i++) {
-        for (let j = 0; j < database[i].table.length; j++) {
-          if (database[i].table[j].name === segments[1]) {
-            for (let k = 0; k < database[i].table[j].data.length; k++) {
-              if (database[i].table[j].data[k].id.toString() === segments[2]) {
-                database[i].table[j].data[k] = data;
-                res.statusCode = 200;
-                res.setHeader("Content-Type", "application/json");
-                res.end(JSON.stringify(database[i].table[j].data[k]));
-                break;
-              } else {
-                res.statusCode = 400;
-                res.setHeader("Content-Type", "text/plain");
-                res.end(
-                  `the server cannot or will not process the request due to something that is perceived to be a client error `
-                );
-                break;
-              }
-            }
-          } else {
-            res.statusCode = 404;
-            res.setHeader("Content-Type", "text/plain");
-            res.end(`path not found ${req.url}`);
-          }
-          break;
-        }
-      }
-    });
-  }
-
   // url API pas bon
   else {
-    res.statusCode = 404;
-    res.end();
+    console.log(req.url)
+    const jsonMessage = {
+      error: {
+        code: 404,
+        message: `Le chemin ${req.url} n'existe pas.`
+      }
+    }
+    res.writeHead(404, {'Content-Type': 'application/json'});
+    res.end(JSON.stringify(jsonMessage));
   }
 });
 
@@ -416,13 +354,3 @@ server.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });
 
-// // Arrêter le serveur après 5 secondes
-// setTimeout(() => {
-//   server.close();
-// }, 10000);
-
-// // Vérifier si le serveur est arrêté
-// server.on('close', () => {
-//   //clearInterval(timerId);
-//   console.log('Le serveur est arrêté');
-// });
