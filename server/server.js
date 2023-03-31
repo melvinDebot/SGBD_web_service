@@ -185,6 +185,7 @@ const server = http.createServer((req, res) => {
 
         //affichage la list des BDD
     } else if (req.method === "GET" && req.url === "/") {
+        console.log(database)
         fs.readFile("data.json", "utf8", (err, data) => {
             if (err) throw err
             // Vérifier si le fichier est vide
@@ -198,8 +199,8 @@ const server = http.createServer((req, res) => {
             } else {
                 res.statusCode = 200
                 res.setHeader("Content-Type", "application/json")
-                database = data
-                console.log(database)
+                // database = data
+                // console.log(database)
                 res.end(data)
             }
         })
@@ -251,6 +252,7 @@ const server = http.createServer((req, res) => {
                                 filtrerObjetParNom(database[i].table[j], q.name)
                             )
                         )
+                        break
                     } else {
                         res.statusCode = 404
                         res.setHeader("Content-Type", "application/json")
@@ -322,8 +324,8 @@ const server = http.createServer((req, res) => {
                         }
                         res.writeHead(200, { "Content-Type": "application/json" })
                         res.end(JSON.stringify(jsonMessage))
+                        break
                     }
-                    break
                 }
                 break
             }
@@ -344,12 +346,11 @@ const server = http.createServer((req, res) => {
                                 }
                                 res.writeHead(200, { "Content-Type": "application/json" })
                                 res.end(JSON.stringify(jsonMessage))
+                                break
                             }
-                            break
                         }
                     }
                 }
-                break
             }
         }
     }
