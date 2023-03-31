@@ -41,8 +41,9 @@ function Details() {
   const handleFilter = (event) => {
     event.preventDefault();
     if (filter !== "") {
-      filterData(filter).then((res) => {
-        setData([res.data]);
+      filterData(segments[0], segments[1], filter).then((res) => {
+        console.log(res.data);
+        setData(res.data.data);
       });
     } else {
       getData(segments[0], segments[1])
