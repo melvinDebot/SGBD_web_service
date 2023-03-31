@@ -1,54 +1,67 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
+import Popup from "../../components/Popup/Popup";
+import { getDatabase, createDatabase, deleteDatabase } from "../../libs/utils";
 
 function Home() {
   const [nameDatabase, setNameDatabase] = useState("");
-  const [updateNameDatabase, setUpdateNameDatabase] = useState("");
   const [database, setDatabase] = useState([]);
+  const [dataPopup, setDataPopup] = useState({
+    title: "",
+    color: "",
+    isShow: false,
+  });
+
   useEffect(() => {
-    // Get all database
-    axios
-      .get("http://localhost:8080")
-      .then((response) => {
-        console.log(response.data);
-        setDatabase(response.data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    const loadData = async () => {
+      getDatabase()
+        .then((res) => {
+          setDatabase(res.data);
+        })
+        .catch((error) => {
+          setDataPopup({
+            title: "error get database!",
+            color: "#FF796F",
+            isShow: true,
+          });
+          console.log(error);
+        });
+    };
+    loadData();
   }, []);
 
   // CREATE NEW DATABASE
   const handlePost = (event) => {
     event.preventDefault();
-    const newObject = {
-      id: `/${nameDatabase}`,
-      name: nameDatabase,
-      table: [],
-    };
-    // Exemple de requête POST à une API
-    axios
-      .post("http://localhost:8080", newObject)
-      .then((response) => {
-        // ADD POPUP
-        window.location.reload(false);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    createDatabase(`/${nameDatabase}`, nameDatabase, []);
+    setDataPopup({
+      title: `Database ${nameDatabase} created!`,
+      color: "#19C16B",
+      isShow: true,
+    });
+    setTimeout(() => {
+      window.location.reload(false);
+    }, 1000);
   };
 
+  // DELETE DATABASE
   const handleDelete = (database) => {
-    console.log(database);
-    axios.delete(`http://localhost:8080/${database}`).then(() => {
-      console.log("Delete Database");
-      window.location.reload(false);
+    deleteDatabase(database);
+    setDataPopup({
+      title: `Database ${database} delete!`,
+      color: "#19C16B",
+      isShow: true,
     });
+    setTimeout(() => {
+      window.location.reload(false);
+    }, 1000);
   };
 
   return (
     <div>
+      {dataPopup.isShow && (
+        <Popup title={dataPopup.title} color={dataPopup.color} />
+      )}
       <h2>DATABASE</h2>
       <form>
         <input
@@ -66,18 +79,17 @@ function Home() {
           <tr>
             <th>Nom</th>
             <th>Voir</th>
-            
             <th>Delete</th>
           </tr>
         </thead>
-        <tbody>
-          {database.map((item, key) => (
-            <tr key={key}>
+        <tbody id="user-item">
+          {database.map((item) => (
+            <tr key={item.id}>
               <td>{item.name}</td>
               <td>
                 <Link to={item.name}>Voir</Link>
               </td>
-              
+
               <td>
                 <button
                   onClick={() => handleDelete(item.name)}
