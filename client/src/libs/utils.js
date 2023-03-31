@@ -48,9 +48,9 @@ export const getData = async (database, table) => {
     return error.response;
   }
 };
-export const filterData = async (filter) => {
+export const filterData = async (database, table, name) => {
   try {
-    let res = await axios.get(`http://localhost:8080/search?name=${filter}`);
+    let res = await axios.get(`http://localhost:8080/${database}/${table}?name=${name}`);
     return res;
   } catch (error) {
     return error.response;
